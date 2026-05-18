@@ -40,13 +40,13 @@
             padding-bottom: 60px; /* Space for sticky footer */
         }
 
-        /* Top Navigation Header bar */
+        /* Top Navigation Header bar - Aligned Center */
         .public-header {
             background-color: var(--sidebar);
             color: white;
             padding: 15px 40px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center; /* Shifted from space-between to center */
             align-items: center;
             position: sticky;
             top: 0;
@@ -55,12 +55,13 @@
         }
         .header-brand {
             font-weight: 700;
-            font-size: 1.3rem;
+            font-size: 1.55rem; /* Increased size by +4px equivalent (from 1.3rem) */
             letter-spacing: 1px;
             text-transform: uppercase;
             user-select: none; /* Prevents text selection highlight during long press */
             -webkit-user-select: none;
             cursor: pointer;
+            text-align: center;
         }
         .header-brand span {
             color: var(--warning);
@@ -341,7 +342,7 @@
 
 <header class="public-header" id="publicHeader">
     <div class="header-brand" id="brandTrigger">JSH2Tech <span>Solutions</span></div>
-    </header>
+</header>
 
 <div id="authSection" class="modal-overlay hidden">
     <div class="auth-card">
@@ -1208,7 +1209,7 @@
         const nextBtn = document.createElement('button');
         nextBtn.classList.add('page-btn');
         nextBtn.innerHTML = `<i class="fas fa-chevron-right"></i>`;
-        nextBtn.disabled = (currentPage === totalPages);
+        nextBtn.disabled = (totalPages === currentPage);
         nextBtn.onclick = () => { currentPage++; renderDashboard(); window.scrollTo({top: 0, behavior: 'smooth'}); };
         controlsContainer.appendChild(nextBtn);
     }
