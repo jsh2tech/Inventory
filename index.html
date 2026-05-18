@@ -58,10 +58,15 @@
             font-size: 1.55rem; /* Increased size by +4px equivalent (from 1.3rem) */
             letter-spacing: 1px;
             text-transform: uppercase;
-            user-select: none; /* Prevents text selection highlight during long press */
-            -webkit-user-select: none;
             cursor: pointer;
             text-align: center;
+            
+            /* Enhanced CSS rules to absolutely prevent mobile highlight/magnifier menus */
+            -webkit-user-select: none;  /* Chrome all / Safari all */
+            -moz-user-select: none;     /* Firefox all */
+            -ms-user-select: none;      /* IE 10+ */
+            user-select: none;          /* Likely future */
+            -webkit-touch-callout: none; /* iOS Safari long-press menu disable */
         }
         .header-brand span {
             color: var(--warning);
@@ -680,24 +685,44 @@
         }
     });
 
-    // 2. Mobile Touch Long-Press Trigger (Press & Hold Logo for 3 seconds)
+    // 2. Mobile Touch Long-Press Trigger Framework (Bypasses System Interceptions)
     const brandTrigger = document.getElementById('brandTrigger');
-    let touchTimer;
+    let touchTimer = null;
+    let longPressedTriggered = false;
 
     if (brandTrigger) {
+        // Handle mobile touch start
         brandTrigger.addEventListener('touchstart', function(e) {
+            longPressedTriggered = false;
+            
+            // Clear any lingering timers
+            if (touchTimer) clearTimeout(touchTimer);
+            
+            // Start a 2.5-second hold timer
             touchTimer = setTimeout(function() {
+                longPressedTriggered = true;
                 triggerAdminPortal();
-            }, 3000);
+            }, 2500); 
         }, { passive: true });
 
-        brandTrigger.addEventListener('touchend', function() {
-            clearTimeout(touchTimer);
-        }, { passive: true });
+        // Intercept standard touch ends to block underlying clicks if long-press succeeded
+        brandTrigger.addEventListener('touchend', function(e) {
+            if (touchTimer) clearTimeout(touchTimer);
+            if (longPressedTriggered) {
+                // If they held it long enough, kill browser magnifying lenses or actions
+                if(e.cancelable) e.preventDefault();
+            }
+        });
 
-        brandTrigger.addEventListener('touchmove', function() {
-            clearTimeout(touchTimer);
+        brandTrigger.addEventListener('touchmove', function(e) {
+            // Cancel hold action if the finger moves/scrolls away
+            if (touchTimer) clearTimeout(touchTimer);
         }, { passive: true });
+        
+        brandTrigger.addEventListener('contextmenu', function(e) {
+            // Disable the standard mobile right-click/long-press save-image menu layout
+            e.preventDefault();
+        });
     }
 
     // --- PHOTO PROCESSING (ADD NEW PRODUCT CAPTURE) ---
