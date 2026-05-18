@@ -58,6 +58,9 @@
             font-size: 1.3rem;
             letter-spacing: 1px;
             text-transform: uppercase;
+            user-select: none; /* Prevents text selection highlight during long press */
+            -webkit-user-select: none;
+            cursor: pointer;
         }
         .header-brand span {
             color: var(--warning);
@@ -337,11 +340,8 @@
 <body>
 
 <header class="public-header" id="publicHeader">
-    <div class="header-brand">JSH2Tech <span>Solutions</span></div>
-    <button class="btn btn-outline-primary" style="padding: 8px 16px; font-size: 0.78rem;" onclick="openAuthModal()">
-        <i class="fas fa-user-shield" style="margin-right: 8px;"></i>Admin Terminal
-    </button>
-</header>
+    <div class="header-brand" id="brandTrigger">JSH2Tech <span>Solutions</span></div>
+    </header>
 
 <div id="authSection" class="modal-overlay hidden">
     <div class="auth-card">
@@ -520,7 +520,7 @@
     <section id="v-about" class="view-section">
         <h1>About the System</h1>
         <div class="form-card">
-            <p><strong>System Version:</strong> 5.1 (Horizontal Grid Structure Matrix Alignment)</p>
+            <p><strong>System Version:</strong> 5.2 (Obscured Backdoor Dynamic Framework Setup)</p>
             <p style="line-height:1.6;">This inventory system allows administrators to manage refurbished stock configurations while building light inquiry communication workflows directly with online retail buyers.</p>
         </div>
     </section>
@@ -654,12 +654,50 @@
     let modalEditingBase64Images = [];
     let qrScannerInstance = null;
 
-    // Updated Pagination Engine: 2 rows of 5 items = 10 items total per structural page view
     let currentPage = 1;
     const itemsPerPage = 10; 
 
     // --- INITIAL DATA ACCESS SYSTEM TRIGGER ---
     initDataSync();
+
+    // --- COEXISTING DESKTOP & MOBILE BACKDOOR ENGINE ---
+    function triggerAdminPortal() {
+        const authSection = document.getElementById('authSection');
+        if (authSection) {
+            authSection.classList.remove('hidden');
+            const authEmailField = document.getElementById('authEmail');
+            if (authEmailField) authEmailField.focus();
+            console.log("Admin Console Triggered Securely.");
+        }
+    }
+
+    // 1. Desktop Keyboard Trigger (Ctrl + Shift + A)
+    window.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'a') {
+            event.preventDefault(); 
+            triggerAdminPortal();
+        }
+    });
+
+    // 2. Mobile Touch Long-Press Trigger (Press & Hold Logo for 3 seconds)
+    const brandTrigger = document.getElementById('brandTrigger');
+    let touchTimer;
+
+    if (brandTrigger) {
+        brandTrigger.addEventListener('touchstart', function(e) {
+            touchTimer = setTimeout(function() {
+                triggerAdminPortal();
+            }, 3000);
+        }, { passive: true });
+
+        brandTrigger.addEventListener('touchend', function() {
+            clearTimeout(touchTimer);
+        }, { passive: true });
+
+        brandTrigger.addEventListener('touchmove', function() {
+            clearTimeout(touchTimer);
+        }, { passive: true });
+    }
 
     // --- PHOTO PROCESSING (ADD NEW PRODUCT CAPTURE) ---
     document.getElementById('pPhotos').addEventListener('change', function(e) {
@@ -1083,7 +1121,7 @@
         });
     }
 
-    // --- FIXED PUBLIC MARKETPLACE GENERATION ENGINE: 2 DYNAMIC ROWS X 5 COLUMNS MATRIX ---
+    // --- PUBLIC MARKETPLACE GENERATION ENGINE: 2 DYNAMIC ROWS X 5 COLUMNS MATRIX ---
     function renderGuestCatalogWithPagination(data) {
         const container = document.getElementById('guestCatalogContainer');
         container.innerHTML = '';
@@ -1096,7 +1134,6 @@
 
         data.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-        // Total pages are bound dynamically by 10 items total block capacities (2 rows x 5 items per column matrix)
         const totalPages = Math.ceil(data.length / itemsPerPage);
         if (currentPage > totalPages) currentPage = totalPages || 1;
         
@@ -1104,14 +1141,12 @@
         const endIndex = startIndex + itemsPerPage;
         const paginatedItems = data.slice(startIndex, endIndex);
 
-        // Instantiate structural block visual rows mapping controls
         const firstRowBlock = document.createElement('div');
         firstRowBlock.classList.add('catalog-row-block');
         
         const secondRowBlock = document.createElement('div');
         secondRowBlock.classList.add('catalog-row-block');
 
-        // Distribute cards up to 5 items columns inside row groups
         paginatedItems.forEach((item, index) => {
             const card = document.createElement('div');
             card.classList.add('catalog-card');
@@ -1135,7 +1170,6 @@
                 </div>
             `;
 
-            // Append sequentially: first 5 items map to row 1, subsequent 5 items map to row 2
             if (index < 5) {
                 firstRowBlock.appendChild(card);
             } else {
@@ -1143,7 +1177,6 @@
             }
         });
 
-        // Inject the mapped grid architectures only if they contain active product components elements
         if (firstRowBlock.children.length > 0) container.appendChild(firstRowBlock);
         if (secondRowBlock.children.length > 0) container.appendChild(secondRowBlock);
 
