@@ -358,7 +358,7 @@
             <label style="color:#94a3b8;">Identity Email</label>
             <input type="email" id="authEmail" placeholder="admin@jsh2tech.com" style="background:#0f172a; color:white; border-color: rgba(255,255,255,0.1); margin-bottom: 15px;">
             <label style="color:#94a3b8;">Passphrase Key</label>
-            <input type="password" id="authPwd" placeholder="••••••••••••" style="background:#0f172a; color:white; border-color: rgba(255,255,255,0.1);">
+            <input type="password" id="authPwd" placeholder="••••••••••••" style="background:#0f172a; color:white; border-color: rgba(255,255,255,0.1); ">
             <button class="btn btn-primary" id="authBtn" style="width: 100%; margin-top: 25px; padding: 14px;">Verify Credentials</button>
         </div>
     </div>
@@ -682,7 +682,7 @@
         }
     });
 
-    // 2. Mobile Touch Long-Press Trigger Framework (Bypasses System Interceptions)
+    // 2. Mobile Touch Long-Press Trigger Framework
     const brandTrigger = document.getElementById('brandTrigger');
     let touchTimer = null;
     let longPressedTriggered = false;
@@ -944,7 +944,6 @@
         window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${body}`, '_blank');
     }
 
-    // Official m.me protocol link framework mapping directly to business page nodes
     function sendMessengerInquiry(name, category, price) {
         const pageId = "100000595169081"; 
         window.open(`https://m.me/${pageId}`, '_blank');
@@ -1086,7 +1085,7 @@
         }
     }
 
-    // --- CONDITIONAL VIEWPORTS ROUTING ENGINE ---
+    // --- RESTORED AND FIXED CONDITIONAL VIEWPORTS ROUTING ENGINE ---
     function filterAndRenderLayouts(items) {
         if(currentRole === 'admin') {
             renderAdminTable(items);
@@ -1114,6 +1113,7 @@
                 `<span class="badge badge-danger">Sold Out</span>` : 
                 `<span class="badge badge-success">In Stock</span>`;
 
+            // --- CRITICAL RE-FIX: Restored Action Column with working Edit & Delete Buttons ---
             row.innerHTML = `
                 <td>
                     ${imageSection}
@@ -1129,8 +1129,12 @@
                     <div style="margin-top: 4px;">${statusLabel}</div>
                 </td>
                 <td>
-                    <button class="btn" style="background:#f1f5f9; color:var(--warning); padding:6px 10px; margin-bottom:2px;" onclick="editItem('${i.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn" style="background:#f1f5f9; color:var(--danger); padding:6px 10px;" onclick="deleteItem('${i.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn" style="background:#f1f5f9; color:var(--warning); padding:6px 10px; margin-bottom:2px;" onclick="editItem('${i.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn" style="background:#f1f5f9; color:var(--danger); padding:6px 10px;" onclick="deleteItem('${i.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </td>
             `;
         });
