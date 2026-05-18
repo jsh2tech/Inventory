@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSH2Tech Solutions | Cloud Inventory & Dashboard</title>
+    <title>JSH2Tech Solutions | Digital Marketplace</title>
     
     <script src="https://unpkg.com/html5-qrcode"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -29,9 +29,41 @@
         }
 
         * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { margin: 0; background-color: var(--bg); color: var(--text-main); display: flex; min-height: 100vh; }
+        
+        body { 
+            margin: 0; 
+            background-color: var(--bg); 
+            color: var(--text-main); 
+            display: flex; 
+            flex-direction: column;
+            min-height: 100vh; 
+            padding-bottom: 60px; /* Space for sticky footer */
+        }
 
-        /* Sidebar Styling */
+        /* Top Navigation Header bar */
+        .public-header {
+            background-color: var(--sidebar);
+            color: white;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            box-shadow: 0 4px 20px rgba(11, 15, 25, 0.15);
+        }
+        .header-brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .header-brand span {
+            color: var(--warning);
+        }
+
+        /* Sidebar Styling (Admin Only View) */
         .sidebar {
             width: 260px;
             background-color: var(--sidebar);
@@ -39,6 +71,8 @@
             display: flex;
             flex-direction: column;
             position: fixed;
+            top: 0;
+            left: 0;
             height: 100vh;
             transition: all 0.3s;
             z-index: 1000;
@@ -54,9 +88,7 @@
             color: #ffffff;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .sidebar-header span {
-            color: var(--warning);
-        }
+        .sidebar-header span { color: var(--warning); }
         .nav-links { padding: 20px 0; flex-grow: 1; }
         .nav-item {
             padding: 14px 25px;
@@ -68,10 +100,7 @@
             text-decoration: none;
         }
         .nav-item i { margin-right: 15px; width: 20px; text-align: center; font-size: 1.1rem; }
-        .nav-item:hover {
-            color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.03);
-        }
+        .nav-item:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.03); }
         .nav-item.active {
             background-color: rgba(0, 180, 216, 0.08);
             color: var(--primary);
@@ -79,31 +108,39 @@
         }
         .logout-area { padding: 20px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
 
-        /* Main Content Area */
+        /* Main Content Workspace */
         .main-content {
-            margin-left: 260px;
             flex-grow: 1;
             padding: 40px;
-            width: calc(100% - 260px);
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            transition: all 0.3s;
         }
+        /* Adjusted layout spacing when admin sidebar overrides active view space */
+        body.admin-mode-active { padding-bottom: 0; }
+        body.admin-mode-active .public-header { display: none; }
+        body.admin-mode-active .sidebar { display: flex !important; }
+        body.admin-mode-active .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            max-width: none;
+        }
+        body.admin-mode-active .static-footer { display: none; }
 
-        /* View Management */
+        /* View Management Layouts */
         .view-section { display: none; animation: fadeIn 0.3s ease-in-out; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Auth Screen Portal */
-        #authSection {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #111827 0%, var(--bg-dark) 100%); 
-            z-index: 9999; display: flex; align-items: center; justify-content: center;
-        }
+        /* Portal Login Modal Custom Structure */
         .auth-card {
-            background: #1e293b; padding: 45px 40px; border-radius: 24px;
+            background: #1e293b; padding: 40px; border-radius: 24px;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 100%; max-width: 420px;
             border: 1px solid rgba(255, 255, 255, 0.08);
+            animation: fadeIn 0.2s ease-out;
         }
-        .auth-card h2 { color: #ffffff; font-weight: 700; font-size: 1.6rem; text-align: center; margin-top: 0; }
+        .auth-card h2 { color: #ffffff; font-weight: 700; font-size: 1.5rem; text-align: center; margin-top: 0; }
         .auth-card h2 span { color: var(--warning); }
 
         /* KPI Dashboard Metrics */
@@ -115,7 +152,7 @@
         .kpi-card h3 { margin: 0; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .kpi-card .value { font-size: 1.8rem; font-weight: 700; margin: 10px 0; color: var(--text-main); }
 
-        /* Forms Architecture */
+        /* Forms Configurations */
         .form-card { background: white; padding: 35px; border-radius: 18px; border: 1px solid var(--border-color); max-width: 800px; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .full-width { grid-column: span 2; }
@@ -126,7 +163,7 @@
         }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #ffffff; box-shadow: 0 0 0 3px var(--primary-glow); }
         
-        /* Buttons Configuration */
+        /* Buttons Framework Setup */
         .btn {
             padding: 12px 25px; border-radius: 8px; border: none; font-weight: 600;
             cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px;
@@ -139,8 +176,10 @@
         .btn-info:hover { background: #1e293b; }
         .btn-warning { background: var(--warning); color: white; padding: 8px 12px; }
         .btn-warning:hover { background: #e05e00; }
+        .btn-outline-primary { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline-primary:hover { background: var(--primary); color: #0b0f19; }
 
-        /* Inquiry Button Suite Extensions */
+        /* Inquiry Omni Channel suite extensions */
         .btn-gmail { background: #ea4335; color: white; }
         .btn-gmail:hover { background: #d33225; }
         .btn-messenger { background: #006aff; color: white; }
@@ -148,42 +187,83 @@
         .btn-whatsapp { background: #25d366; color: white; }
         .btn-whatsapp:hover { background: #1ebd54; }
 
-        /* Table Customization */
+        /* Tables Custom Styles */
         .table-container { background: white; border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.01); }
         table { width: 100%; border-collapse: collapse; }
         th { background: #f1f5f9; padding: 16px; text-align: left; font-size: 0.8rem; color: var(--text-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color); }
         td { padding: 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 0.95rem; }
         tr:hover td { background-color: #f8fafc; }
 
-        /* Catalog Layout */
-        .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 30px; margin-top: 20px; }
+        /* Refactored Marketplace Grid Layout Architecture: 2 Main Columns containing 5-Row Blocks */
+        .catalog-main-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 25px;
+        }
+        .catalog-column-block {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        /* Widescreen 16:9 Display Cards Configuration */
         .catalog-card { 
             background: white; border-radius: 20px; border: 1px solid var(--border-color); overflow: hidden; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
+            display: flex; flex-direction: column;
         }
-        .catalog-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1); border-color: var(--primary); }
-        .catalog-img-frame { width: 100%; height: 210px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid var(--border-color); }
-        .catalog-img-frame img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
-        .catalog-card:hover .catalog-img-frame img { transform: scale(1.04); }
-        .catalog-img-placeholder { color: #cbd5e1; font-size: 3.5rem; }
-        .catalog-info { padding: 24px; }
-        .catalog-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 10px 0; color: var(--text-main); line-height: 1.3; }
-        .catalog-desc { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .catalog-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 18px; }
-        .catalog-price { font-size: 1.35rem; font-weight: 700; color: var(--text-main); }
+        .catalog-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08); border-color: var(--primary); }
+        
+        /* Aspect Ratio Box forcing exactly 16:9 spatial graphics frames dimensions */
+        .catalog-img-frame { 
+            width: 100%; 
+            position: relative;
+            padding-top: 56.25%; /* Perfect 16:9 Ratio dimension calculation aspect box */
+            background: #f1f5f9; 
+            overflow: hidden; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+        .catalog-img-frame img, .catalog-img-frame .catalog-img-placeholder { 
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; transition: transform 0.5s ease; 
+        }
+        .catalog-img-placeholder {
+            display: flex; align-items: center; justify-content: center;
+            color: #cbd5e1; font-size: 3.5rem;
+        }
+        .catalog-card:hover .catalog-img-frame img { transform: scale(1.03); }
+        .catalog-info { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; }
+        .catalog-title { font-size: 1.2rem; font-weight: 700; margin: 0 0 10px 0; color: var(--text-main); line-height: 1.3; }
+        .catalog-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .catalog-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 18px; margin-top: auto; }
+        .catalog-price { font-size: 1.4rem; font-weight: 700; color: var(--text-main); }
 
-        /* Badges Engine */
+        /* Client-Side Engine Pagination Controls Layout */
+        .pagination-container {
+            display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 40px; padding: 20px 0;
+        }
+        .page-btn {
+            background: white; border: 1px solid var(--border-color); color: var(--text-main);
+            width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .page-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+        .page-btn.active { background: var(--primary); border-color: var(--primary); color: #0b0f19; font-weight: 700; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Badges Engine Classes */
         .badge { display: inline-block; padding: 5px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .badge-primary { background: rgba(0, 180, 216, 0.1); color: var(--primary-dark); border: 1px solid rgba(0, 180, 216, 0.2); }
         .badge-success { background: #d1fae5; color: #065f46; }
         .badge-danger { background: var(--warning-glow); color: var(--warning); border: 1px solid rgba(255,107,0,0.1); }
 
-        /* Image Media Previews & Interactive Removers */
+        /* Media Previews Elements and Controls overlays */
         .preview-container { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
         .preview-wrapper { position: relative; display: inline-block; }
         .preview-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color); transition: all 0.2s ease; cursor: pointer; }
         .preview-img:hover { border-color: var(--primary); transform: scale(1.05); }
-        
         .remove-img-overlay {
             position: absolute; top: -5px; right: -5px; width: 18px; height: 18px;
             background: var(--danger); color: white; border-radius: 50%; display: flex;
@@ -191,7 +271,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-weight: bold;
         }
 
-        /* Modals Overlay */
+        /* Modals and Overlays Architectures */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(11, 15, 25, 0.6); display: flex; align-items: center;
@@ -207,42 +287,66 @@
         .close-btn { background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--text-muted); transition: color 0.2s; }
         .close-btn:hover { color: var(--warning); }
 
-        /* Detail Modal Gallery */
+        /* Gallery arrays thumbnails blocks inside specifications layout modally */
         .modal-gallery { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
         .main-modal-img { width: 100%; height: 320px; object-fit: contain; background: #f8fafc; border-radius: 14px; border: 1px solid var(--border-color); }
 
+        /* Omnichannel Static Bottom Footer Bar Implementation */
+        .static-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: var(--sidebar);
+            color: #94a3b8;
+            border-top: 2px solid var(--bg-dark);
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            padding: 0 40px;
+            font-size: 0.88rem;
+            z-index: 850;
+        }
+        .static-footer .left-block { text-align: left; }
+        .static-footer .left-block a { color: var(--primary); text-decoration: none; font-weight: 500; }
+        .static-footer .left-block a:hover { text-decoration: underline; }
+        .static-footer .center-block { text-align: center; font-weight: 500; color: #ffffff; }
+        .static-footer .right-block { text-align: right; text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; font-weight: 600; color: var(--primary); }
+
         .hidden { display: none !important; }
         
-        @media (max-width: 768px) {
-            .sidebar { width: 70px; }
-            .sidebar span, .sidebar-header { display: none; }
-            .main-content { margin-left: 70px; width: calc(100% - 70px); padding: 20px; }
-            .input-grid { grid-template-columns: 1fr; }
-            .full-width { grid-column: span 1; }
+        @media (max-width: 992px) {
+            .catalog-main-wrapper { grid-template-columns: 1fr; }
+            .static-footer { grid-template-columns: 1fr; gap: 5px; height: auto; padding: 15px; position: static; text-align: center; }
+            .static-footer .left-block, .static-footer .center-block, .static-footer .right-block { text-align: center; }
+            body { padding-bottom: 0; }
         }
     </style>
 </head>
 <body>
 
-<div id="authSection">
+<header class="public-header" id="publicHeader">
+    <div class="header-brand">JSH2Tech <span>Solutions</span></div>
+    <button class="btn btn-outline-primary" style="padding: 8px 16px; font-size: 0.78rem;" onclick="openAuthModal()">
+        <i class="fas fa-user-shield" style="margin-right: 8px;"></i>Admin Terminal
+    </button>
+</header>
+
+<div id="authSection" class="modal-overlay hidden">
     <div class="auth-card">
-        <h2>JSH2Tech <span>Solutions</span></h2>
-        <p style="color: #94a3b8; margin-bottom: 30px; text-align: center; font-size: 0.92rem;" id="authDesc">Enter admin credentials or explore the marketplace.</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; text-align: left;">Admin <span>Portal</span></h2>
+            <button class="close-btn" onclick="closeAuthModal()" style="color: #94a3b8;">&times;</button>
+        </div>
+        <p style="color: #94a3b8; margin-bottom: 25px; font-size: 0.88rem;">Enter security credentials to authenticate console node workspace access.</p>
         
         <div id="credentialsForm">
-            <label style="color:#94a3b8;">Email Address</label>
-            <input type="email" id="authEmail" placeholder="admin@jsh2tech.com" style="background:#1e293b; color:white; border-color: rgba(255,255,255,0.1);">
-            <label style="margin-top: 15px; color:#94a3b8;">Password</label>
-            <input type="password" id="authPwd" placeholder="••••••••••••" style="background:#1e293b; color:white; border-color: rgba(255,255,255,0.1);">
-            <button class="btn btn-primary" id="authBtn" style="width: 100%; margin-top: 25px; padding: 14px;">Sign In</button>
-            <p style="text-align: center; margin-top: 20px; font-size: 0.88rem;">
-                <a href="#" id="toggleAuth" style="color: var(--primary); font-weight: 600; text-decoration: none;">Create an Account</a>
-            </p>
-        </div>
-
-        <div style="margin-top: 25px; padding-top: 25px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center;">
-            <p style="font-size: 0.88rem; color: #94a3b8; margin-bottom: 15px;">Looking for computer units or laptops?</p>
-            <button class="btn btn-info" id="guestBtn" style="width: 100%; padding: 14px;"><i class="fas fa-eye" style="margin-right: 10px;"></i>Explore Catalogue</button>
+            <label style="color:#94a3b8;">Identity Email</label>
+            <input type="email" id="authEmail" placeholder="admin@jsh2tech.com" style="background:#0f172a; color:white; border-color: rgba(255,255,255,0.1); margin-bottom: 15px;">
+            <label style="color:#94a3b8;">Passphrase Key</label>
+            <input type="password" id="authPwd" placeholder="••••••••••••" style="background:#0f172a; color:white; border-color: rgba(255,255,255,0.1);">
+            <button class="btn btn-primary" id="authBtn" style="width: 100%; margin-top: 25px; padding: 14px;">Verify Credentials</button>
         </div>
     </div>
 </div>
@@ -276,9 +380,9 @@
     </div>
 </nav>
 
-<main class="main-content hidden" id="mainContent">
+<main class="main-content" id="mainContent">
     
-    <section id="v-dash" class="view-section admin-only active">
+    <section id="v-dash" class="view-section admin-only">
         <h1 style="margin-top: 0; font-weight: 700;">Dashboard Overview</h1>
         <div class="kpi-grid">
             <div class="kpi-card" style="border-top: 4px solid var(--success);">
@@ -352,13 +456,13 @@
         </div>
     </section>
 
-    <section id="v-list" class="view-section">
-        <h1 id="listHeader" style="font-weight: 700;">Product Catalogue</h1>
+    <section id="v-list" class="view-section active">
+        <h1 id="listHeader" style="font-weight: 700; margin-top: 0;">Product Catalogue</h1>
         <div class="search-container" style="margin-bottom: 25px;">
             <input type="text" id="searchBar" placeholder="Search by name, specs or category..." style="max-width: 450px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
         </div>
         
-        <div id="adminTableContainer" class="table-container admin-only">
+        <div id="adminTableContainer" class="table-container hidden">
             <table>
                 <thead>
                     <tr>
@@ -375,7 +479,9 @@
             </table>
         </div>
 
-        <div id="guestCatalogContainer" class="catalog-grid hidden"></div>
+        <div id="guestCatalogContainer" class="catalog-main-wrapper"></div>
+
+        <div id="paginationControls" class="pagination-container"></div>
     </section>
 
     <section id="v-qr" class="view-section admin-only">
@@ -404,7 +510,7 @@
     <section id="v-about" class="view-section">
         <h1>About the System</h1>
         <div class="form-card">
-            <p><strong>System Version:</strong> 4.2 (UI/UX Omnichannel Update)</p>
+            <p><strong>System Version:</strong> 5.0 (Public Omni-Channel Landing Update)</p>
             <p style="line-height:1.6;">This inventory system allows administrators to manage refurbished stock configurations while building light inquiry communication workflows directly with online retail buyers.</p>
         </div>
     </section>
@@ -500,10 +606,22 @@
     </div>
 </div>
 
+<footer class="static-footer" id="staticFooter">
+    <div class="left-block">
+        Follow us on FB: <a href="https://www.facebook.com/profile.php?id=100000595169081" target="_blank">JSH2Tech</a>
+    </div>
+    <div class="center-block">
+        JSH2Tech &copy; All Rights Reserved 2026
+    </div>
+    <div class="right-block">
+        NetServe Software Solutions
+    </div>
+</footer>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCaU8ZlDt3iWsqMnLzmMF2cwe_Zj6Ls72A",
@@ -521,11 +639,17 @@
     const inventoryRef = ref(db, 'inventory');
 
     let fullData = [];
-    let isLogin = true;
     let currentRole = 'guest'; 
     let currentBase64Images = [];
     let modalEditingBase64Images = [];
     let qrScannerInstance = null;
+
+    // Pagination Engine Properties
+    let currentPage = 1;
+    const itemsPerPage = 10; // 5 items per row x 2 columns = 10 items total per structural pagination page block
+
+    // --- INITIAL DATA ACCESS SYSTEM TRIGGER ---
+    initDataSync();
 
     // --- PHOTO PROCESSING (ADD NEW PRODUCT CAPTURE) ---
     document.getElementById('pPhotos').addEventListener('change', function(e) {
@@ -629,52 +753,49 @@
     // --- GATEWAY LAYER ROUTING MIGRATIONS ---
     function configureUIVisibility() {
         if(currentRole === 'admin') {
+            document.body.classList.add('admin-mode-active');
             document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
             document.getElementById('adminTableContainer').classList.remove('hidden');
             document.getElementById('guestCatalogContainer').classList.add('hidden');
-            document.getElementById('sidebarBrand').innerHTML = "JSH2Tech <span>Solutions</span>";
-            document.getElementById('listHeader').innerText = "Product Catalogue";
+            document.getElementById('paginationControls').classList.add('hidden');
             showView('v-dash', document.getElementById('navDash'));
         } else {
+            document.body.classList.remove('admin-mode-active');
             document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
             document.getElementById('adminTableContainer').classList.add('hidden');
             document.getElementById('guestCatalogContainer').classList.remove('hidden');
-            document.getElementById('sidebarBrand').innerHTML = "JSH2Tech <span>Solutions</span>";
-            document.getElementById('listHeader').innerText = "Product Catalogue";
-            showView('v-list', document.getElementById('navList'));
+            document.getElementById('paginationControls').classList.remove('hidden');
+            showView('v-list', null);
         }
+        currentPage = 1;
         filterAndRenderLayouts(fullData);
     }
 
-    document.getElementById('guestBtn').onclick = () => {
-        currentRole = 'guest';
+    // --- GLOBAL SCOPE WINDOW BRIDGES FOR OVERLAY MODAL TOGGLES ---
+    window.openAuthModal = () => {
+        document.getElementById('authSection').classList.remove('hidden');
+    };
+    window.closeAuthModal = () => {
         document.getElementById('authSection').classList.add('hidden');
-        document.getElementById('sidebar').classList.remove('hidden');
-        document.getElementById('mainContent').classList.remove('hidden');
-        configureUIVisibility();
-        initDataSync();
     };
 
-    // --- GLOBAL SCOPE WINDOW BRIDGES ---
     window.showView = (id, el) => {
         if (id !== 'v-qr' && qrScannerInstance) {
             qrScannerInstance.clear().catch(err => console.log(err));
         }
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         if(el) el.classList.add('active');
     };
 
     window.logout = () => {
         if (qrScannerInstance) qrScannerInstance.clear().catch(err => console.log(err));
-        if (currentRole === 'admin') {
-            signOut(auth);
-        } else {
-            document.getElementById('authSection').classList.remove('hidden');
-            document.getElementById('sidebar').classList.add('hidden');
-            document.getElementById('mainContent').classList.add('hidden');
-        }
+        signOut(auth).then(() => {
+            currentRole = 'guest';
+            configureUIVisibility();
+        });
     };
 
     window.deleteItem = (id) => {
@@ -695,7 +816,6 @@
         document.getElementById('m_sPrice').value = item.sell || 0;
         document.getElementById('m_pDetails').value = item.details || '';
         
-        // Deep copy images array to keep sandbox local during current operation
         modalEditingBase64Images = item.images ? [...item.images] : [];
         renderEditModalThumbnails();
         
@@ -763,13 +883,11 @@
     }
 
     function sendMessengerInquiry(name, category, price) {
-        // Direct link configuration targeting JSH2TechSolutions page inbox directly
         const fbSlug = "JSH2TechSolutions"; 
         window.open(`https://www.facebook.com/messages/t/${fbSlug}`, '_blank');
     }
 
     function sendWhatsappInquiry(name, category, price) {
-        // Standardized Ph country code format profile phone string
         const phoneNumber = "639123456789"; 
         const message = encodeURIComponent(`Hello JSH2Tech Solutions, I am checking the availability of the ${name} (${category}) priced at PHP ${(price || 0).toLocaleString()}.`);
         window.open(`https://api.whatsapp.com/send?phone=${phoneNumber}&text=${message}`, '_blank');
@@ -777,34 +895,26 @@
 
     // --- AUTH BACKEND ROUTINES ---
     const authBtn = document.getElementById('authBtn');
-    document.getElementById('toggleAuth').onclick = () => {
-        isLogin = !isLogin;
-        document.getElementById('authDesc').innerText = isLogin ? "Enter admin credentials or explore the marketplace." : "Register a new administration workspace terminal account.";
-        authBtn.innerText = isLogin ? "Sign In" : "Register";
-    };
-
     authBtn.onclick = () => {
         const e = document.getElementById('authEmail').value;
         const p = document.getElementById('authPwd').value;
-        if(isLogin) signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
-        else createUserWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
+        signInWithEmailAndPassword(auth, e, p)
+            .then(() => {
+                closeAuthModal();
+                // Inputs are cleaned after verification
+                document.getElementById('authEmail').value = '';
+                document.getElementById('authPwd').value = '';
+            })
+            .catch(err => alert("Authentication Failed: " + err.message));
     };
 
     onAuthStateChanged(auth, (user) => {
-        const authView = document.getElementById('authSection');
-        const sidebar = document.getElementById('sidebar');
-        const main = document.getElementById('mainContent');
         if(user) {
             currentRole = 'admin';
-            authView.classList.add('hidden');
-            sidebar.classList.remove('hidden');
-            main.classList.remove('hidden');
             configureUIVisibility();
-            initDataSync();
-        } else if (currentRole === 'admin') {
-            authView.classList.remove('hidden');
-            sidebar.classList.add('hidden');
-            main.classList.add('hidden');
+        } else {
+            currentRole = 'guest';
+            configureUIVisibility();
         }
     });
 
@@ -853,7 +963,6 @@
         const q = parseInt(document.getElementById('m_qty').value) || 0;
         const details = document.getElementById('m_pDetails').value;
 
-        // Upgraded state package including updated modified/deleted visual fields arrays
         const payload = { name, category, status, date, buy: b, sell: s, qty: q, details, images: modalEditingBase64Images, profit: (s - b) * q };
         
         update(ref(db, 'inventory/' + id), payload).then(() => { window.closeEditModal(); });
@@ -861,17 +970,27 @@
 
     // --- LIVE FILTER CONTROLS ---
     document.getElementById('searchBar').oninput = (e) => {
-        const val = e.target.value.toLowerCase();
-        const filtered = fullData.filter(i => 
-            i.name.toLowerCase().includes(val) || 
-            (i.details && i.details.toLowerCase().includes(val)) ||
-            i.category.toLowerCase().includes(val)
-        );
-        filterAndRenderLayouts(filtered);
+        currentPage = 1; 
+        renderDashboard();
     };
 
+    function getFilteredData() {
+        const val = document.getElementById('searchBar').value.toLowerCase();
+        return fullData.filter(i => {
+            const matchesSearch = i.name.toLowerCase().includes(val) || 
+                                 (i.details && i.details.toLowerCase().includes(val)) ||
+                                 i.category.toLowerCase().includes(val);
+            if (currentRole === 'admin') {
+                return matchesSearch;
+            } else {
+                return matchesSearch && i.qty >= 1 && i.status !== 'sold';
+            }
+        });
+    }
+
     function renderDashboard() {
-        filterAndRenderLayouts(fullData);
+        const filtered = getFilteredData();
+        filterAndRenderLayouts(filtered);
         renderHistory(fullData);
         
         let pos = 0, neg = 0, monthly = {};
@@ -884,19 +1003,25 @@
             monthly[key].p += p;
         });
 
-        document.getElementById('kpi-pos').innerText = "₱" + pos.toLocaleString();
-        document.getElementById('kpi-neg').innerText = "₱" + Math.abs(neg).toLocaleString();
-        document.getElementById('kpi-net').innerText = "₱" + (pos+neg).toLocaleString();
+        const kpiPos = document.getElementById('kpi-pos');
+        const kpiNeg = document.getElementById('kpi-neg');
+        const kpiNet = document.getElementById('kpi-net');
+        
+        if (kpiPos) kpiPos.innerText = "₱" + pos.toLocaleString();
+        if (kpiNeg) kpiNeg.innerText = "₱" + Math.abs(neg).toLocaleString();
+        if (kpiNet) kpiNet.innerText = "₱" + (pos+neg).toLocaleString();
 
         const mGrid = document.getElementById('monthlyGrid');
-        mGrid.innerHTML = '';
-        Object.keys(monthly).sort().reverse().forEach(k => {
-            mGrid.innerHTML += `
-                <div class="kpi-card" style="min-width: 140px; text-align: center; padding: 15px; border-top: 3px solid var(--primary);">
-                    <h4 style="margin:0; font-size: 0.75rem;">${monthly[k].label}</h4>
-                    <p style="margin: 5px 0 0; font-weight:700; color:var(--text-main)">₱${monthly[k].p.toLocaleString()}</p>
-                </div>`;
-        });
+        if (mGrid) {
+            mGrid.innerHTML = '';
+            Object.keys(monthly).sort().reverse().forEach(k => {
+                mGrid.innerHTML += `
+                    <div class="kpi-card" style="min-width: 140px; text-align: center; padding: 15px; border-top: 3px solid var(--primary);">
+                        <h4 style="margin:0; font-size: 0.75rem;">${monthly[k].label}</h4>
+                        <p style="margin: 5px 0 0; font-weight:700; color:var(--text-main)">₱${monthly[k].p.toLocaleString()}</p>
+                    </div>`;
+            });
+        }
     }
 
     // --- CONDITIONAL VIEWPORTS ROUTING ENGINE ---
@@ -904,8 +1029,7 @@
         if(currentRole === 'admin') {
             renderAdminTable(items);
         } else {
-            const publicAvailableItems = items.filter(i => i.qty >= 1 && i.qty <= 100000 && i.status !== 'sold');
-            renderGuestCatalog(publicAvailableItems);
+            renderGuestCatalogWithPagination(items);
         }
     }
 
@@ -950,39 +1074,105 @@
         });
     }
 
-    function renderGuestCatalog(data) {
+    // --- REFACTORED 2-COLUMN MARKETPLACE GENERATION ENGINE WITH VISUAL PAGINATION ---
+    function renderGuestCatalogWithPagination(data) {
         const container = document.getElementById('guestCatalogContainer');
         container.innerHTML = '';
 
         if(data.length === 0) {
-            container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">No available stock matching your search filters.</p>`;
+            container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">No available units match your current search constraints.</p>`;
+            document.getElementById('paginationControls').innerHTML = '';
             return;
         }
 
-        data.forEach(i => {
+        // Sort items chronologically by default
+        data.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        // Calculate paging indices variables
+        const totalPages = Math.ceil(data.length / itemsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+        
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const paginatedItems = data.slice(startIndex, endIndex);
+
+        // Build 2 discrete layout column anchors blocks inside the primary grid wrapper container
+        const leftColumnBlock = document.createElement('div');
+        leftColumnBlock.classList.add('catalog-column-block');
+        
+        const rightColumnBlock = document.createElement('div');
+        rightColumnBlock.classList.add('catalog-column-block');
+
+        // Distribute paginated content items systematically across the left and right structural paths
+        paginatedItems.forEach((item, index) => {
             const card = document.createElement('div');
             card.classList.add('catalog-card');
-            card.onclick = () => openDetailsModal(i.id);
+            card.onclick = () => openDetailsModal(item.id);
 
             let imgTag = `<div class="catalog-img-placeholder"><i class="fa-regular fa-image"></i></div>`;
-            if(i.images && i.images.length > 0) {
-                imgTag = `<img src="${i.images[0]}" alt="Product catalogue cover">`;
+            if(item.images && item.images.length > 0) {
+                imgTag = `<img src="${item.images[0]}" alt="Product catalogue cover template inside widescreen framework">`;
             }
 
             card.innerHTML = `
                 <div class="catalog-img-frame">${imgTag}</div>
                 <div class="catalog-info">
-                    <span class="badge badge-primary" style="margin-bottom: 8px;">${i.category || 'Product'}</span>
-                    <h3 class="catalog-title">${i.name}</h3>
-                    <p class="catalog-desc">${i.details || 'Click to view complete configurations and technical details.'}</p>
+                    <span class="badge badge-primary" style="align-self: flex-start; margin-bottom: 10px;">${item.category || 'Product'}</span>
+                    <h3 class="catalog-title">${item.name}</h3>
+                    <p class="catalog-desc">${item.details || 'Click to view full component architectures and specifications configurations array.'}</p>
                     <div class="catalog-footer">
-                        <div class="catalog-price">₱${(i.sell || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
-                        <span style="font-size: 0.8rem; font-weight:600; color: var(--success);"><i class="fa-solid fa-circle-check"></i> Available</span>
+                        <div class="catalog-price">₱${(item.sell || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                        <span style="font-size: 0.85rem; font-weight:600; color: var(--success);"><i class="fa-solid fa-circle-check"></i> Available</span>
                     </div>
                 </div>
             `;
-            container.appendChild(card);
+
+            // Distribute items to balance left and right columns evenly
+            if (index % 2 === 0) {
+                leftColumnBlock.appendChild(card);
+            } else {
+                rightColumnBlock.appendChild(card);
+            }
         });
+
+        container.appendChild(leftColumnBlock);
+        container.appendChild(rightColumnBlock);
+
+        // Render Pagination Interface Component
+        renderPaginationControls(totalPages);
+    }
+
+    function renderPaginationControls(totalPages) {
+        const controlsContainer = document.getElementById('paginationControls');
+        controlsContainer.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        // Previous arrow navigation button block
+        const prevBtn = document.createElement('button');
+        prevBtn.classList.add('page-btn');
+        prevBtn.innerHTML = `<i class="fas fa-chevron-left"></i>`;
+        prevBtn.disabled = (currentPage === 1);
+        prevBtn.onclick = () => { currentPage--; renderDashboard(); window.scrollTo({top: 0, behavior: 'smooth'}); };
+        controlsContainer.appendChild(prevBtn);
+
+        // Numerical indices triggers loops mapping
+        for (let i = 1; i <= totalPages; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.classList.add('page-btn');
+            if (i === currentPage) pageBtn.classList.add('active');
+            pageBtn.innerText = i;
+            pageBtn.onclick = () => { currentPage = i; renderDashboard(); window.scrollTo({top: 0, behavior: 'smooth'}); };
+            controlsContainer.appendChild(pageBtn);
+        }
+
+        // Next arrow navigation button block
+        const nextBtn = document.createElement('button');
+        nextBtn.classList.add('page-btn');
+        nextBtn.innerHTML = `<i class="fas fa-chevron-right"></i>`;
+        nextBtn.disabled = (currentPage === totalPages);
+        nextBtn.onclick = () => { currentPage++; renderDashboard(); window.scrollTo({top: 0, behavior: 'smooth'}); };
+        controlsContainer.appendChild(nextBtn);
     }
 
     function renderHistory(data) {
