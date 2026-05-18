@@ -46,7 +46,7 @@
             color: white;
             padding: 15px 40px;
             display: flex;
-            justify-content: center; /* Shifted from space-between to center */
+            justify-content: center; 
             align-items: center;
             position: sticky;
             top: 0;
@@ -55,18 +55,17 @@
         }
         .header-brand {
             font-weight: 700;
-            font-size: 1.55rem; /* Increased size by +4px equivalent (from 1.3rem) */
+            font-size: 1.55rem; 
             letter-spacing: 1px;
             text-transform: uppercase;
             cursor: pointer;
             text-align: center;
             
-            /* Enhanced CSS rules to absolutely prevent mobile highlight/magnifier menus */
-            -webkit-user-select: none;  /* Chrome all / Safari all */
-            -moz-user-select: none;     /* Firefox all */
-            -ms-user-select: none;      /* IE 10+ */
-            user-select: none;          /* Likely future */
-            -webkit-touch-callout: none; /* iOS Safari long-press menu disable */
+            -webkit-user-select: none;  
+            -moz-user-select: none;     
+            -ms-user-select: none;      
+            user-select: none;          
+            -webkit-touch-callout: none; 
         }
         .header-brand span {
             color: var(--warning);
@@ -126,7 +125,6 @@
             margin: 0 auto;
             transition: all 0.3s;
         }
-        /* Adjusted layout spacing when admin sidebar overrides active view space */
         body.admin-mode-active { padding-bottom: 0; }
         body.admin-mode-active .public-header { display: none; }
         body.admin-mode-active .sidebar { display: flex !important; }
@@ -203,7 +201,7 @@
         td { padding: 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 0.95rem; }
         tr:hover td { background-color: #f8fafc; }
 
-        /* Refactored Marketplace Layout Grid: 2 rows, each featuring 5 items columns */
+        /* Catalog Grid Matrix Layout Setup */
         .catalog-row-wrapper {
             display: flex;
             flex-direction: column;
@@ -226,11 +224,10 @@
         }
         .catalog-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08); border-color: var(--primary); }
         
-        /* Aspect Ratio Box forcing exactly 16:9 spatial graphics frames dimensions */
         .catalog-img-frame { 
             width: 100%; 
             position: relative;
-            padding-top: 56.25%; /* Perfect 16:9 Ratio dimension calculation aspect box */
+            padding-top: 56.25%; 
             background: #f1f5f9; 
             overflow: hidden; 
             border-bottom: 1px solid var(--border-color); 
@@ -299,7 +296,7 @@
         .close-btn { background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--text-muted); transition: color 0.2s; }
         .close-btn:hover { color: var(--warning); }
 
-        /* Gallery arrays thumbnails blocks inside specifications layout modally */
+        /* Gallery array visualization */
         .modal-gallery { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
         .main-modal-img { width: 100%; height: 320px; object-fit: contain; background: #f8fafc; border-radius: 14px; border: 1px solid var(--border-color); }
 
@@ -691,36 +688,27 @@
     let longPressedTriggered = false;
 
     if (brandTrigger) {
-        // Handle mobile touch start
         brandTrigger.addEventListener('touchstart', function(e) {
             longPressedTriggered = false;
-            
-            // Clear any lingering timers
             if (touchTimer) clearTimeout(touchTimer);
-            
-            // Start a 2.5-second hold timer
             touchTimer = setTimeout(function() {
                 longPressedTriggered = true;
                 triggerAdminPortal();
             }, 2500); 
         }, { passive: true });
 
-        // Intercept standard touch ends to block underlying clicks if long-press succeeded
         brandTrigger.addEventListener('touchend', function(e) {
             if (touchTimer) clearTimeout(touchTimer);
             if (longPressedTriggered) {
-                // If they held it long enough, kill browser magnifying lenses or actions
                 if(e.cancelable) e.preventDefault();
             }
         });
 
         brandTrigger.addEventListener('touchmove', function(e) {
-            // Cancel hold action if the finger moves/scrolls away
             if (touchTimer) clearTimeout(touchTimer);
         }, { passive: true });
         
         brandTrigger.addEventListener('contextmenu', function(e) {
-            // Disable the standard mobile right-click/long-press save-image menu layout
             e.preventDefault();
         });
     }
@@ -956,9 +944,10 @@
         window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${body}`, '_blank');
     }
 
+    // Official m.me protocol link framework mapping directly to business page nodes
     function sendMessengerInquiry(name, category, price) {
-        const fbSlug = "JSH2TechSolutions"; 
-        window.open(`https://www.facebook.com/messages/t/${fbSlug}`, '_blank');
+        const pageId = "100000595169081"; 
+        window.open(`https://m.me/${pageId}`, '_blank');
     }
 
     function sendWhatsappInquiry(name, category, price) {
