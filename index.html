@@ -7,7 +7,7 @@
     
     <script src="https://unpkg.com/html5-qrcode"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -113,7 +113,7 @@
             flex-grow: 1;
             padding: 40px;
             width: 100%;
-            max-width: 1600px;
+            max-width: 1700px;
             margin: 0 auto;
             transition: all 0.3s;
         }
@@ -194,24 +194,26 @@
         td { padding: 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 0.95rem; }
         tr:hover td { background-color: #f8fafc; }
 
-        /* Refactored Marketplace Grid Layout Architecture: 2 Main Columns containing 5-Row Blocks */
-        .catalog-main-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        /* Refactored Marketplace Layout Grid: 2 rows, each featuring 5 items columns */
+        .catalog-row-wrapper {
+            display: flex;
+            flex-direction: column;
             gap: 30px;
             margin-top: 25px;
         }
-        .catalog-column-block {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
+        .catalog-row-block {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            width: 100%;
         }
         
         /* Widescreen 16:9 Display Cards Configuration */
         .catalog-card { 
-            background: white; border-radius: 20px; border: 1px solid var(--border-color); overflow: hidden; 
+            background: white; border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
             display: flex; flex-direction: column;
+            height: 100%;
         }
         .catalog-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08); border-color: var(--primary); }
         
@@ -231,14 +233,15 @@
         }
         .catalog-img-placeholder {
             display: flex; align-items: center; justify-content: center;
-            color: #cbd5e1; font-size: 3.5rem;
+            color: #cbd5e1; font-size: 2.5rem;
         }
         .catalog-card:hover .catalog-img-frame img { transform: scale(1.03); }
-        .catalog-info { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; }
-        .catalog-title { font-size: 1.2rem; font-weight: 700; margin: 0 0 10px 0; color: var(--text-main); line-height: 1.3; }
-        .catalog-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .catalog-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 18px; margin-top: auto; }
-        .catalog-price { font-size: 1.4rem; font-weight: 700; color: var(--text-main); }
+        
+        .catalog-info { padding: 18px; display: flex; flex-direction: column; flex-grow: 1; }
+        .catalog-title { font-size: 1rem; font-weight: 700; margin: 0 0 8px 0; color: var(--text-main); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .catalog-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .catalog-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-top: auto; }
+        .catalog-price { font-size: 1.15rem; font-weight: 700; color: var(--text-main); }
 
         /* Client-Side Engine Pagination Controls Layout */
         .pagination-container {
@@ -254,7 +257,7 @@
         .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
         /* Badges Engine Classes */
-        .badge { display: inline-block; padding: 5px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .badge-primary { background: rgba(0, 180, 216, 0.1); color: var(--primary-dark); border: 1px solid rgba(0, 180, 216, 0.2); }
         .badge-success { background: #d1fae5; color: #065f46; }
         .badge-danger { background: var(--warning-glow); color: var(--warning); border: 1px solid rgba(255,107,0,0.1); }
@@ -316,11 +319,18 @@
 
         .hidden { display: none !important; }
         
+        /* Layout scaling for responsive viewports changing 5 columns structure */
+        @media (max-width: 1400px) {
+            .catalog-row-block { grid-template-columns: repeat(3, 1fr); }
+        }
         @media (max-width: 992px) {
-            .catalog-main-wrapper { grid-template-columns: 1fr; }
+            .catalog-row-block { grid-template-columns: repeat(2, 1fr); }
             .static-footer { grid-template-columns: 1fr; gap: 5px; height: auto; padding: 15px; position: static; text-align: center; }
             .static-footer .left-block, .static-footer .center-block, .static-footer .right-block { text-align: center; }
             body { padding-bottom: 0; }
+        }
+        @media (max-width: 576px) {
+            .catalog-row-block { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -479,7 +489,7 @@
             </table>
         </div>
 
-        <div id="guestCatalogContainer" class="catalog-main-wrapper"></div>
+        <div id="guestCatalogContainer" class="catalog-row-wrapper"></div>
 
         <div id="paginationControls" class="pagination-container"></div>
     </section>
@@ -510,7 +520,7 @@
     <section id="v-about" class="view-section">
         <h1>About the System</h1>
         <div class="form-card">
-            <p><strong>System Version:</strong> 5.0 (Public Omni-Channel Landing Update)</p>
+            <p><strong>System Version:</strong> 5.1 (Horizontal Grid Structure Matrix Alignment)</p>
             <p style="line-height:1.6;">This inventory system allows administrators to manage refurbished stock configurations while building light inquiry communication workflows directly with online retail buyers.</p>
         </div>
     </section>
@@ -644,9 +654,9 @@
     let modalEditingBase64Images = [];
     let qrScannerInstance = null;
 
-    // Pagination Engine Properties
+    // Updated Pagination Engine: 2 rows of 5 items = 10 items total per structural page view
     let currentPage = 1;
-    const itemsPerPage = 10; // 5 items per row x 2 columns = 10 items total per structural pagination page block
+    const itemsPerPage = 10; 
 
     // --- INITIAL DATA ACCESS SYSTEM TRIGGER ---
     initDataSync();
@@ -834,7 +844,7 @@
         document.getElementById('d_pName').innerText = item.name || 'Product Details';
         document.getElementById('d_pCategory').innerText = item.category || 'Unassigned';
         document.getElementById('d_pPrice').innerText = "₱" + (item.sell || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('d_pDetails').innerText = item.details || 'No catalog specifications provided.';
+        document.getElementById('d_pDetails').innerText = item.details || 'No catalogue specifications provided.';
 
         const mainImg = document.getElementById('d_mainImg');
         const thumbContainer = document.getElementById('d_thumbContainer');
@@ -901,7 +911,6 @@
         signInWithEmailAndPassword(auth, e, p)
             .then(() => {
                 closeAuthModal();
-                // Inputs are cleaned after verification
                 document.getElementById('authEmail').value = '';
                 document.getElementById('authPwd').value = '';
             })
@@ -1056,7 +1065,7 @@
                 <td>
                     ${imageSection}
                     <strong>${i.name}</strong><br>
-                    <small style="color:var(--text-muted); display:block; max-width:300px;">${i.details || 'No catalog details.'}</small>
+                    <small style="color:var(--text-muted); display:block; max-width:300px;">${i.details || 'No catalogue details.'}</small>
                 </td>
                 <td>₱${(i.buy || 0).toLocaleString()}</td>
                 <td>₱${(i.sell || 0).toLocaleString()}</td>
@@ -1074,21 +1083,20 @@
         });
     }
 
-    // --- REFACTORED 2-COLUMN MARKETPLACE GENERATION ENGINE WITH VISUAL PAGINATION ---
+    // --- FIXED PUBLIC MARKETPLACE GENERATION ENGINE: 2 DYNAMIC ROWS X 5 COLUMNS MATRIX ---
     function renderGuestCatalogWithPagination(data) {
         const container = document.getElementById('guestCatalogContainer');
         container.innerHTML = '';
 
         if(data.length === 0) {
-            container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">No available units match your current search constraints.</p>`;
+            container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 40px; width: 100%;">No available units match your search constraints.</p>`;
             document.getElementById('paginationControls').innerHTML = '';
             return;
         }
 
-        // Sort items chronologically by default
         data.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-        // Calculate paging indices variables
+        // Total pages are bound dynamically by 10 items total block capacities (2 rows x 5 items per column matrix)
         const totalPages = Math.ceil(data.length / itemsPerPage);
         if (currentPage > totalPages) currentPage = totalPages || 1;
         
@@ -1096,14 +1104,14 @@
         const endIndex = startIndex + itemsPerPage;
         const paginatedItems = data.slice(startIndex, endIndex);
 
-        // Build 2 discrete layout column anchors blocks inside the primary grid wrapper container
-        const leftColumnBlock = document.createElement('div');
-        leftColumnBlock.classList.add('catalog-column-block');
+        // Instantiate structural block visual rows mapping controls
+        const firstRowBlock = document.createElement('div');
+        firstRowBlock.classList.add('catalog-row-block');
         
-        const rightColumnBlock = document.createElement('div');
-        rightColumnBlock.classList.add('catalog-column-block');
+        const secondRowBlock = document.createElement('div');
+        secondRowBlock.classList.add('catalog-row-block');
 
-        // Distribute paginated content items systematically across the left and right structural paths
+        // Distribute cards up to 5 items columns inside row groups
         paginatedItems.forEach((item, index) => {
             const card = document.createElement('div');
             card.classList.add('catalog-card');
@@ -1111,34 +1119,34 @@
 
             let imgTag = `<div class="catalog-img-placeholder"><i class="fa-regular fa-image"></i></div>`;
             if(item.images && item.images.length > 0) {
-                imgTag = `<img src="${item.images[0]}" alt="Product catalogue cover template inside widescreen framework">`;
+                imgTag = `<img src="${item.images[0]}" alt="Product catalog visualization">`;
             }
 
             card.innerHTML = `
                 <div class="catalog-img-frame">${imgTag}</div>
                 <div class="catalog-info">
-                    <span class="badge badge-primary" style="align-self: flex-start; margin-bottom: 10px;">${item.category || 'Product'}</span>
+                    <span class="badge badge-primary" style="align-self: flex-start; margin-bottom: 8px;">${item.category || 'Product'}</span>
                     <h3 class="catalog-title">${item.name}</h3>
-                    <p class="catalog-desc">${item.details || 'Click to view full component architectures and specifications configurations array.'}</p>
+                    <p class="catalog-desc">${item.details || 'Click to view configuration arrays.'}</p>
                     <div class="catalog-footer">
                         <div class="catalog-price">₱${(item.sell || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
-                        <span style="font-size: 0.85rem; font-weight:600; color: var(--success);"><i class="fa-solid fa-circle-check"></i> Available</span>
+                        <span style="font-size: 0.8rem; font-weight:600; color: var(--success);"><i class="fa-solid fa-circle-check"></i> Available</span>
                     </div>
                 </div>
             `;
 
-            // Distribute items to balance left and right columns evenly
-            if (index % 2 === 0) {
-                leftColumnBlock.appendChild(card);
+            // Append sequentially: first 5 items map to row 1, subsequent 5 items map to row 2
+            if (index < 5) {
+                firstRowBlock.appendChild(card);
             } else {
-                rightColumnBlock.appendChild(card);
+                secondRowBlock.appendChild(card);
             }
         });
 
-        container.appendChild(leftColumnBlock);
-        container.appendChild(rightColumnBlock);
+        // Inject the mapped grid architectures only if they contain active product components elements
+        if (firstRowBlock.children.length > 0) container.appendChild(firstRowBlock);
+        if (secondRowBlock.children.length > 0) container.appendChild(secondRowBlock);
 
-        // Render Pagination Interface Component
         renderPaginationControls(totalPages);
     }
 
@@ -1148,7 +1156,6 @@
 
         if (totalPages <= 1) return;
 
-        // Previous arrow navigation button block
         const prevBtn = document.createElement('button');
         prevBtn.classList.add('page-btn');
         prevBtn.innerHTML = `<i class="fas fa-chevron-left"></i>`;
@@ -1156,7 +1163,6 @@
         prevBtn.onclick = () => { currentPage--; renderDashboard(); window.scrollTo({top: 0, behavior: 'smooth'}); };
         controlsContainer.appendChild(prevBtn);
 
-        // Numerical indices triggers loops mapping
         for (let i = 1; i <= totalPages; i++) {
             const pageBtn = document.createElement('button');
             pageBtn.classList.add('page-btn');
@@ -1166,7 +1172,6 @@
             controlsContainer.appendChild(pageBtn);
         }
 
-        // Next arrow navigation button block
         const nextBtn = document.createElement('button');
         nextBtn.classList.add('page-btn');
         nextBtn.innerHTML = `<i class="fas fa-chevron-right"></i>`;
