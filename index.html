@@ -170,6 +170,15 @@
         }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #ffffff; box-shadow: 0 0 0 3px var(--primary-glow); }
         
+        /* Dynamic specs container alignment styling */
+        .specs-group-box {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-top: 5px;
+        }
+
         /* Buttons Framework Setup */
         .btn {
             padding: 12px 25px; border-radius: 8px; border: none; font-weight: 600;
@@ -455,14 +464,75 @@
                     <label>Selling Price (₱)</label>
                     <input type="number" id="sPrice" placeholder="0.00">
                 </div>
+                
+                <div class="full-width">
+                    <label>Product Specifications Configuration Matrix</label>
+                    
+                    <div id="specsGroupLaptop" class="specs-group-box">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                            <div>
+                                <label>Processor</label>
+                                <input type="text" id="addSpec_Processor" placeholder="e.g. Intel Core i7-2920XM">
+                            </div>
+                            <div>
+                                <label>RAM Size</label>
+                                <input type="text" id="addSpec_LaptopRam" placeholder="e.g. 16GB DDR3">
+                            </div>
+                            <div>
+                                <label>Storage Capacity</label>
+                                <input type="text" id="addSpec_LaptopStorage" placeholder="e.g. 512GB SSD + 1TB HDD">
+                            </div>
+                            <div>
+                                <label>Battery Condition</label>
+                                <input type="text" id="addSpec_Battery" placeholder="e.g. New / 85% Health">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="specsGroupRam" class="specs-group-box hidden">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                            <div>
+                                <label>RAM Type</label>
+                                <input type="text" id="addSpec_RamType" placeholder="e.g. DDR4 SODIMM">
+                            </div>
+                            <div>
+                                <label>RAM Speed</label>
+                                <input type="text" id="addSpec_RamSpeed" placeholder="e.g. 3200MHz">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="specsGroupStorage" class="specs-group-box hidden">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                            <div>
+                                <label>Storage Type</label>
+                                <input type="text" id="addSpec_StorageType" placeholder="e.g. NVMe M.2 SSD / 2.5\" SATA">
+                            </div>
+                            <div>
+                                <label>Storage Size</label>
+                                <input type="text" id="addSpec_StorageSize" placeholder="e.g. 1TB">
+                            </div>
+                            <div>
+                                <label>Drive Health (%)</label>
+                                <input type="text" id="addSpec_StorageHealth" placeholder="e.g. 100% Healthy">
+                            </div>
+                            <div>
+                                <label>Drive Performance</label>
+                                <input type="text" id="addSpec_StoragePerf" placeholder="e.g. Excellent / 550MB/s">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <label>Extra Remarks / Custom Details</label>
+                        <textarea id="addSpec_ExtraDetails" rows="3" placeholder="Specify legacy display, cosmetic conditions, backlights modifications..."></textarea>
+                    </div>
+                </div>
+
                 <div class="full-width">
                     <label>Product Photos (Max 5)</label>
                     <input type="file" id="pPhotos" multiple accept="image/*" style="padding: 8px; background: #ffffff;">
                     <div id="photoPreviewContainer" class="preview-container"></div>
-                </div>
-                <div class="full-width">
-                    <label>Product Details / Specifications</label>
-                    <textarea id="pDetails" rows="4" placeholder="Specify processor details, cosmetics issues, battery status..."></textarea>
                 </div>
             </div>
             <button class="btn btn-primary" id="actionBtn" style="margin-top: 30px; width: 100%; padding: 15px;">Save Product</button>
@@ -523,7 +593,7 @@
     <section id="v-about" class="view-section">
         <h1>About the System</h1>
         <div class="form-card">
-            <p><strong>System Version:</strong> 5.2 (Obscured Backdoor Dynamic Framework Setup)</p>
+            <p><strong>System Version:</strong> 5.3 (Dynamic Context Specification Architecture)</p>
             <p style="line-height:1.6;">This inventory system allows administrators to manage refurbished stock configurations while building light inquiry communication workflows directly with online retail buyers.</p>
         </div>
     </section>
@@ -571,15 +641,76 @@
                 <label>Selling Price (₱)</label>
                 <input type="number" id="m_sPrice">
             </div>
+            
+            <div class="full-width">
+                <label>Update Specifications Fields</label>
+                
+                <div id="modalSpecsGroupLaptop" class="specs-group-box">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                        <div>
+                            <label>Processor</label>
+                            <input type="text" id="mSpec_Processor">
+                        </div>
+                        <div>
+                            <label>RAM Size</label>
+                            <input type="text" id="mSpec_LaptopRam">
+                        </div>
+                        <div>
+                            <label>Storage Capacity</label>
+                            <input type="text" id="mSpec_LaptopStorage">
+                        </div>
+                        <div>
+                            <label>Battery Condition</label>
+                            <input type="text" id="mSpec_Battery">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="modalSpecsGroupRam" class="specs-group-box hidden">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                        <div>
+                            <label>RAM Type</label>
+                            <input type="text" id="mSpec_RamType">
+                        </div>
+                        <div>
+                            <label>RAM Speed</label>
+                            <input type="text" id="mSpec_RamSpeed">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="modalSpecsGroupStorage" class="specs-group-box hidden">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                        <div>
+                            <label>Storage Type</label>
+                            <input type="text" id="mSpec_StorageType">
+                        </div>
+                        <div>
+                            <label>Storage Size</label>
+                            <input type="text" id="mSpec_StorageSize">
+                        </div>
+                        <div>
+                            <label>Drive Health (%)</label>
+                            <input type="text" id="mSpec_StorageHealth">
+                        </div>
+                        <div>
+                            <label>Drive Performance</label>
+                            <input type="text" id="mSpec_StoragePerf">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <label>Extra Remarks / Custom Details</label>
+                    <textarea id="mSpec_ExtraDetails" rows="3"></textarea>
+                </div>
+            </div>
+
             <div class="full-width">
                 <label>Current Product Photos (Max 5 Total)</label>
                 <div id="m_photoEditContainer" class="preview-container" style="margin-bottom:15px; padding:10px; background:#f8fafc; border-radius:8px;"></div>
                 <label>Append New Photos</label>
                 <input type="file" id="m_pPhotosAppend" multiple accept="image/*" style="padding: 8px; background: #ffffff; border: 1px dashed var(--border-color)">
-            </div>
-            <div class="full-width">
-                <label>Product Details</label>
-                <textarea id="m_pDetails" rows="3"></textarea>
             </div>
         </div>
         <input type="hidden" id="m_editId">
@@ -662,6 +793,112 @@
 
     // --- INITIAL DATA ACCESS SYSTEM TRIGGER ---
     initDataSync();
+
+    // --- STRATEGIC INTERACTIVE CONTEXT FORM DISPLAY LINKS ---
+    function syncDynamicFormFields(categoryId, laptopBoxId, ramBoxId, storageBoxId) {
+        const catValue = document.getElementById(categoryId).value;
+        const lBox = document.getElementById(laptopBoxId);
+        const rBox = document.getElementById(ramBoxId);
+        const sBox = document.getElementById(storageBoxId);
+
+        lBox.classList.add('hidden');
+        rBox.classList.add('hidden');
+        sBox.classList.add('hidden');
+
+        if (catValue === 'Laptop') lBox.classList.remove('hidden');
+        else if (catValue === 'Ram') rBox.classList.remove('hidden');
+        else if (catValue === 'Storage') sBox.classList.remove('hidden');
+    }
+
+    // Attach Event Listeners for category dropdown switches
+    document.getElementById('pCategory').addEventListener('change', () => {
+        syncDynamicFormFields('pCategory', 'specsGroupLaptop', 'specsGroupRam', 'specsGroupStorage');
+    });
+    document.getElementById('m_pCategory').addEventListener('change', () => {
+        syncDynamicFormFields('m_pCategory', 'modalSpecsGroupLaptop', 'modalSpecsGroupRam', 'modalSpecsGroupStorage');
+    });
+
+    // --- COMPONENT TEXT STRINGS PACKERS & UNPACKERS ENGINE ---
+    function compileSpecificationsText(category, prefix) {
+        let compiled = "";
+        if (category === 'Laptop') {
+            compiled += `Processor: ${document.getElementById(prefix + 'Spec_Processor').value}\n`;
+            compiled += `RAM: ${document.getElementById(prefix + 'Spec_LaptopRam').value}\n`;
+            compiled += `Storage: ${document.getElementById(prefix + 'Spec_LaptopStorage').value}\n`;
+            compiled += `Battery: ${document.getElementById(prefix + 'Spec_Battery').value}\n`;
+        } else if (category === 'Ram') {
+            compiled += `Ram type: ${document.getElementById(prefix + 'Spec_RamType').value}\n`;
+            compiled += `Ram speed: ${document.getElementById(prefix + 'Spec_RamSpeed').value}\n`;
+        } else if (category === 'Storage') {
+            compiled += `Storage type: ${document.getElementById(prefix + 'Spec_StorageType').value}\n`;
+            compiled += `Storage size: ${document.getElementById(prefix + 'Spec_StorageSize').value}\n`;
+            compiled += `Health: ${document.getElementById(prefix + 'Spec_StorageHealth').value}\n`;
+            compiled += `Performance: ${document.getElementById(prefix + 'Spec_StoragePerf').value}\n`;
+        }
+        
+        const extra = document.getElementById(prefix + 'Spec_ExtraDetails').value.trim();
+        if (extra) {
+            compiled += `Extra Details: ${extra}`;
+        }
+        return compiled;
+    }
+
+    function unpackSpecificationsText(category, fullText, prefix) {
+        // Clear all target workspace elements first
+        const elements = [
+            'Spec_Processor', 'Spec_LaptopRam', 'Spec_LaptopStorage', 'Spec_Battery',
+            'Spec_RamType', 'Spec_RamSpeed', 'Spec_StorageType', 'Spec_StorageSize',
+            'Spec_StorageHealth', 'Spec_StoragePerf', 'Spec_ExtraDetails'
+        ];
+        elements.forEach(id => {
+            const el = document.getElementById(prefix + id);
+            if(el) el.value = "";
+        });
+
+        if (!fullText) return;
+
+        const lines = fullText.split('\n');
+        let extraDetailsBuffer = [];
+
+        lines.forEach(line => {
+            if (!line.includes(':')) {
+                if (line.trim()) extraDetailsBuffer.push(line);
+                return;
+            }
+            
+            const splitIdx = line.indexOf(':');
+            const label = line.substring(0, splitIdx).toLowerCase().trim();
+            const value = line.substring(splitIdx + 1).trim();
+
+            if (category === 'Laptop') {
+                if (label === 'processor') document.getElementById(prefix + 'Spec_Processor').value = value;
+                else if (label === 'ram') document.getElementById(prefix + 'Spec_LaptopRam').value = value;
+                else if (label === 'storage') document.getElementById(prefix + 'Spec_LaptopStorage').value = value;
+                else if (label === 'battery') document.getElementById(prefix + 'Spec_Battery').value = value;
+                else if (label === 'extra details') document.getElementById(prefix + 'Spec_ExtraDetails').value = value;
+                else if (line.trim()) extraDetailsBuffer.push(line);
+            } else if (category === 'Ram') {
+                if (label === 'ram type') document.getElementById(prefix + 'Spec_RamType').value = value;
+                else if (label === 'ram speed') document.getElementById(prefix + 'Spec_RamSpeed').value = value;
+                else if (label === 'extra details') document.getElementById(prefix + 'Spec_ExtraDetails').value = value;
+                else if (line.trim()) extraDetailsBuffer.push(line);
+            } else if (category === 'Storage') {
+                if (label === 'storage type') document.getElementById(prefix + 'Spec_StorageType').value = value;
+                else if (label === 'storage size') document.getElementById(prefix + 'Spec_StorageSize').value = value;
+                else if (label === 'health') document.getElementById(prefix + 'Spec_StorageHealth').value = value;
+                else if (label === 'performance') document.getElementById(prefix + 'Spec_StoragePerf').value = value;
+                else if (label === 'extra details') document.getElementById(prefix + 'Spec_ExtraDetails').value = value;
+                else if (line.trim()) extraDetailsBuffer.push(line);
+            }
+        });
+
+        if (extraDetailsBuffer.length > 0) {
+            const currentExtra = document.getElementById(prefix + 'Spec_ExtraDetails').value;
+            const appended = currentExtra ? currentExtra + "\n" + extraDetailsBuffer.join('\n') : extraDetailsBuffer.join('\n');
+            document.getElementById(prefix + 'Spec_ExtraDetails').value = appended;
+        }
+    }
+
 
     // --- COEXISTING DESKTOP & MOBILE BACKDOOR ENGINE ---
     function triggerAdminPortal() {
@@ -787,7 +1024,7 @@
         });
     }
 
-    // --- QR CODE SCANNER INITIALIZATION ENGINE FIXED ---
+    // --- QR CODE SCANNER INITIALIZATION ENGINE ---
     document.getElementById('startCamBtn').onclick = () => {
         if (qrScannerInstance) {
             qrScannerInstance.clear();
@@ -831,6 +1068,7 @@
         }
         currentPage = 1;
         filterAndRenderLayouts(fullData);
+        syncDynamicFormFields('pCategory', 'specsGroupLaptop', 'specsGroupRam', 'specsGroupStorage');
     }
 
     // --- GLOBAL SCOPE WINDOW BRIDGES FOR OVERLAY MODAL TOGGLES ---
@@ -876,8 +1114,11 @@
         document.getElementById('m_qty').value = item.qty || 0;
         document.getElementById('m_bPrice').value = item.buy || 0;
         document.getElementById('m_sPrice').value = item.sell || 0;
-        document.getElementById('m_pDetails').value = item.details || '';
         
+        // Dynamic Viewport Matrix Alignment Trigger for Edit Form Fields
+        syncDynamicFormFields('m_pCategory', 'modalSpecsGroupLaptop', 'modalSpecsGroupRam', 'modalSpecsGroupStorage');
+        unpackSpecificationsText(item.category || 'Laptop', item.details || '', 'm');
+
         modalEditingBase64Images = item.images ? [...item.images] : [];
         renderEditModalThumbnails();
         
@@ -997,19 +1238,22 @@
         const b = parseFloat(document.getElementById('bPrice').value) || 0;
         const s = parseFloat(document.getElementById('sPrice').value) || 0;
         const q = parseInt(document.getElementById('qty').value) || 0;
-        const details = document.getElementById('pDetails').value;
-
+        
         if(!name) return alert("Please enter a valid product name.");
+        
+        // Compile Dynamic Fields Assembly String
+        const details = compileSpecificationsText(category, 'add');
         
         const payload = { name, category, status, date, buy: b, sell: s, qty: q, details, images: currentBase64Images, profit: (s - b) * q };
         
         push(inventoryRef, payload).then(() => {
             alert("Product saved successfully!");
             document.querySelectorAll('#v-add input').forEach(i => i.value = '');
-            document.getElementById('pDetails').value = '';
+            document.getElementById('addSpec_ExtraDetails').value = '';
             document.getElementById('pStatus').value = 'available';
             document.getElementById('photoPreviewContainer').innerHTML = '';
             currentBase64Images = [];
+            syncDynamicFormFields('pCategory', 'specsGroupLaptop', 'specsGroupRam', 'specsGroupStorage');
         });
     };
 
@@ -1022,7 +1266,9 @@
         const b = parseFloat(document.getElementById('m_bPrice').value) || 0;
         const s = parseFloat(document.getElementById('m_sPrice').value) || 0;
         const q = parseInt(document.getElementById('m_qty').value) || 0;
-        const details = document.getElementById('m_pDetails').value;
+        
+        // Compile from Dynamic Fields Edit Modal Array
+        const details = compileSpecificationsText(category, 'm');
 
         const payload = { name, category, status, date, buy: b, sell: s, qty: q, details, images: modalEditingBase64Images, profit: (s - b) * q };
         
@@ -1085,7 +1331,6 @@
         }
     }
 
-    // --- RESTORED AND FIXED CONDITIONAL VIEWPORTS ROUTING ENGINE ---
     function filterAndRenderLayouts(items) {
         if(currentRole === 'admin') {
             renderAdminTable(items);
@@ -1113,12 +1358,11 @@
                 `<span class="badge badge-danger">Sold Out</span>` : 
                 `<span class="badge badge-success">In Stock</span>`;
 
-            // --- CRITICAL RE-FIX: Restored Action Column with working Edit & Delete Buttons ---
             row.innerHTML = `
                 <td>
                     ${imageSection}
                     <strong>${i.name}</strong><br>
-                    <small style="color:var(--text-muted); display:block; max-width:300px;">${i.details || 'No catalogue details.'}</small>
+                    <small style="color:var(--text-main); display:block; max-width:300px; white-space:pre-wrap; background:#f8fafc; padding:5px; border-radius:4px; font-size:0.8rem; margin-top:4px; border:1px solid var(--border-color);">${i.details || 'No specifications configurations details.'}</small>
                 </td>
                 <td>₱${(i.buy || 0).toLocaleString()}</td>
                 <td>₱${(i.sell || 0).toLocaleString()}</td>
@@ -1181,7 +1425,7 @@
                 <div class="catalog-info">
                     <span class="badge badge-primary" style="align-self: flex-start; margin-bottom: 8px;">${item.category || 'Product'}</span>
                     <h3 class="catalog-title">${item.name}</h3>
-                    <p class="catalog-desc">${item.details || 'Click to view configuration arrays.'}</p>
+                    <p class="catalog-desc" style="white-space: pre-line;">${item.details || 'Click to view configuration arrays.'}</p>
                     <div class="catalog-footer">
                         <div class="catalog-price">₱${(item.sell || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
                         <span style="font-size: 0.8rem; font-weight:600; color: var(--success);"><i class="fa-solid fa-circle-check"></i> Available</span>
