@@ -290,6 +290,22 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-weight: bold;
         }
 
+        /* Inline QR Thumbnails for Admin Panel Workspace Layouts */
+        .table-qr-thumb {
+            width: 45px;
+            height: 45px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            background: white;
+            padding: 2px;
+        }
+        .table-qr-thumb:hover {
+            transform: scale(1.1);
+            border-color: var(--primary);
+        }
+
         /* Modals and Overlays Architectures */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -389,6 +405,8 @@
     </style>
 </head>
 <body>
+
+<div id="qrGenerationCanvasBuffer" class="hidden"></div>
 
 <header class="public-header" id="publicHeader">
     <div class="header-brand" id="brandTrigger">JSH2Tech <span>Solutions</span></div>
@@ -588,6 +606,7 @@
             <table>
                 <thead>
                     <tr>
+                        <th>QR Node</th>
                         <th>Unique ID</th>
                         <th>Product Details</th>
                         <th>Buying Price</th>
@@ -633,7 +652,7 @@
     <section id="v-about" class="view-section">
         <h1>About the System</h1>
         <div class="form-card">
-            <p><strong>System Version:</strong> 5.5 (Carousel Integration Build)</p>
+            <p><strong>System Version:</strong> 6.0 (Automated QR Correction Build)</p>
             <p style="line-height:1.6;">This inventory system allows administrators to manage refurbished stock configurations while building light inquiry communication workflows directly with online retail buyers.</p>
         </div>
     </section>
@@ -755,7 +774,22 @@
         </div>
         <input type="hidden" id="m_editId">
         <input type="hidden" id="m_skuId">
+        <input type="hidden" id="m_qrCode">
         <button class="btn btn-primary" id="saveEditBtn" style="margin-top: 30px; width: 100%; padding: 14px;">Save Configuration Changes</button>
+    </div>
+</div>
+
+<div id="qrSpotlightModal" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 360px; text-align: center; padding: 25px;">
+        <div class="modal-header" style="margin-bottom: 15px; padding-bottom: 10px;">
+            <h3 style="font-size: 1.1rem; text-align: left;">Asset Label Matrix</h3>
+            <button class="close-btn" onclick="closeQrSpotlightModal()">&times;</button>
+        </div>
+        <div style="background: white; padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); display: inline-block; margin-bottom: 15px;">
+            <img id="spotlightQrImage" src="" style="width: 200px; height: 200px; display: block;" alt="Asset Matrix Grid">
+        </div>
+        <div id="spotlightSkuId" class="badge badge-id" style="font-size: 0.9rem; padding: 6px 12px; display: block; margin-bottom: 20px;">JSH2-Y26-CODE</div>
+        <button class="btn btn-info" onclick="window.print()" style="width: 100%;"><i class="fas fa-print" style="margin-right: 8px;"></i>Print Stock Label</button>
     </div>
 </div>
 
@@ -848,12 +882,47 @@
 
     // --- AUTOMATIC TRACKING ALPHANUMERIC GENERATOR ENGINE ---
     function generateUniqueSKUID() {
-        const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Clean elements without ambiguous characters (0, O, 1, I)
+        const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; 
         let result = '';
         for (let i = 0; i < 4; i++) {
             result += characters.charAt(Math.floor(Math.random() * characters.length));
         }
         return `JSH2-Y26-${result}`;
+    }
+
+    // --- STANDALONE LIGHTWEIGHT SYNC QR CREATOR MATRIX PIPELINE ---
+    function createQRCodeDataUrlAsync(textData) {
+        return new Promise((resolve) => {
+            const bufferZone = document.getElementById('qrGenerationCanvasBuffer');
+            bufferZone.innerHTML = '';
+            
+            // Build temporary element for native html5-qrcode processing pipeline
+            const tempDivId = 'temp_qr_renderer_' + Math.floor(Math.random() * 1000);
+            const tempDiv = document.createElement('div');
+            tempDiv.id = tempDivId;
+            bufferZone.appendChild(tempDiv);
+            
+            // Instantiate native object builder
+            const qrCreator = new Html5QrcodeScanner(tempDivId, { fps: 10, qrbox: 250 }, false);
+            
+            // Allow layout render pass loop cycle to compile native canvas object inside frame
+            setTimeout(() => {
+                try {
+                    const canvasObj = tempDiv.querySelector('canvas');
+                    if(canvasObj) {
+                        const base64Url = canvasObj.toDataURL("image/png");
+                        bufferZone.innerHTML = ''; // Flush elements clean
+                        resolve(base64Url);
+                    } else {
+                        // Fallback implementation logic if canvas is unavailable
+                        resolve("");
+                    }
+                } catch(e) {
+                    console.error("QR Canvas pipeline trace exception:", e);
+                    resolve("");
+                }
+            }, 300);
+        });
     }
 
     // --- INITIAL DATA ACCESS SYSTEM TRIGGER ---
@@ -1161,6 +1230,7 @@
         
         document.getElementById('m_editId').value = id;
         document.getElementById('m_skuId').value = item.skuId || '';
+        document.getElementById('m_qrCode').value = item.qrCode || '';
         document.getElementById('m_displaySku').innerText = `(${item.skuId || 'No ID'})`;
         document.getElementById('m_pName').value = item.name || '';
         document.getElementById('m_pCategory').value = item.category || 'Laptop';
@@ -1180,6 +1250,18 @@
     };
 
     window.closeEditModal = () => { document.getElementById('editModal').classList.add('hidden'); };
+
+    // --- INTERACTIVE QR CODE SPOTLIGHT OVERLAY ACTION HOOKS ---
+    window.openQrSpotlightModal = (skuId, qrBase64) => {
+        if (!qrBase64) return;
+        document.getElementById('spotlightQrImage').src = qrBase64;
+        document.getElementById('spotlightSkuId').innerText = skuId;
+        document.getElementById('qrSpotlightModal').classList.remove('hidden');
+    };
+
+    window.closeQrSpotlightModal = () => {
+        document.getElementById('qrSpotlightModal').classList.add('hidden');
+    };
 
     // --- DYNAMIC CAROUSEL SLIDE MANAGEMENT RUNTIME ---
     function updateCarouselDisplay(index, resetTimer = false) {
@@ -1338,17 +1420,46 @@
         else { currentRole = 'guest'; configureUIVisibility(); }
     });
 
+    // --- COHESIVE BACKWARD-COMPATIBLE RUNTIME REPAIR AND CORRECTION SYSTEM ---
     function initDataSync() {
-        onValue(inventoryRef, (snap) => {
+        onValue(inventoryRef, async (snap) => {
             const data = snap.val();
             fullData = [];
-            for(let key in data) fullData.push({ id: key, ...data[key] });
+            let needsRepairCorrection = false;
+
+            for(let key in data) {
+                let currentItem = { id: key, ...data[key] };
+                
+                // Detection mechanism checks for missing Tracking ID or QR Payload matrices strings
+                if (!currentItem.skuId || !currentItem.qrCode) {
+                    needsRepairCorrection = true;
+                    const assignedSku = currentItem.skuId || generateUniqueSKUID();
+                    
+                    // Generate new physical structural matrix image for this node inside memory
+                    const correctedQrCodeString = await createQRCodeDataUrlAsync(assignedSku);
+                    
+                    // Issue correction patch asynchronously to real-time node path
+                    const itemRepairRef = ref(db, `inventory/${key}`);
+                    await update(itemRepairRef, {
+                        skuId: assignedSku,
+                        qrCode: correctedQrCodeString
+                    });
+                    
+                    // Sync patched references into memory copy
+                    currentItem.skuId = assignedSku;
+                    currentItem.qrCode = correctedQrCodeString;
+                }
+                
+                fullData.push(currentItem);
+            }
+
+            // Trigger workspace render matrices refresh sequences cleanly
             renderDashboard();
         });
     }
 
-    // --- DATA MUTATION ACTIONS (WITH AUTOMATIC UNIQUE ID ASSIGNMENT) ---
-    document.getElementById('actionBtn').onclick = () => {
+    // --- DATA MUTATION ACTIONS (WITH AUTOMATIC UNIQUE ID & QR ATTACHMENT) ---
+    document.getElementById('actionBtn').onclick = async () => {
         const name = document.getElementById('pName').value;
         const category = document.getElementById('pCategory').value;
         const status = document.getElementById('pStatus').value;
@@ -1360,9 +1471,12 @@
         if(!name) return alert("Please enter a valid product name.");
         
         const details = compileSpecificationsText(category, 'add');
-        const skuId = generateUniqueSKUID(); // Automatic assignment hook integration
+        const skuId = generateUniqueSKUID(); 
         
-        const payload = { skuId, name, category, status, date, buy: b, sell: s, qty: q, details, images: currentBase64Images, profit: (s - b) * q };
+        // Render and encapsulate alphanumeric matrix into a DataURI string base64 segment payload
+        const qrCode = await createQRCodeDataUrlAsync(skuId);
+        
+        const payload = { skuId, qrCode, name, category, status, date, buy: b, sell: s, qty: q, details, images: currentBase64Images, profit: (s - b) * q };
         
         push(inventoryRef, payload).then(() => {
             alert(`Product saved successfully with Tracking Key: ${skuId}`);
@@ -1375,9 +1489,11 @@
         });
     };
 
-    document.getElementById('saveEditBtn').onclick = () => {
+    document.getElementById('saveEditBtn').onclick = async () => {
         const id = document.getElementById('m_editId').value;
-        const skuId = document.getElementById('m_skuId').value || generateUniqueSKUID(); 
+        let skuId = document.getElementById('m_skuId').value;
+        let qrCode = document.getElementById('m_qrCode').value;
+        
         const name = document.getElementById('m_pName').value;
         const category = document.getElementById('m_pCategory').value;
         const status = document.getElementById('m_pStatus').value;
@@ -1386,9 +1502,16 @@
         const s = parseFloat(document.getElementById('m_sPrice').value) || 0;
         const q = parseInt(document.getElementById('m_qty').value) || 0;
         
+        if (!skuId) {
+            skuId = generateUniqueSKUID();
+            qrCode = await createQRCodeDataUrlAsync(skuId);
+        } else if (!qrCode) {
+            qrCode = await createQRCodeDataUrlAsync(skuId);
+        }
+
         const details = compileSpecificationsText(category, 'm');
 
-        const payload = { skuId, name, category, status, date, buy: b, sell: s, qty: q, details, images: modalEditingBase64Images, profit: (s - b) * q };
+        const payload = { skuId, qrCode, name, category, status, date, buy: b, sell: s, qty: q, details, images: modalEditingBase64Images, profit: (s - b) * q };
         
         update(ref(db, 'inventory/' + id), payload).then(() => { window.closeEditModal(); });
     };
@@ -1448,7 +1571,7 @@
         else renderGuestCatalogWithPagination(items);
     }
 
-    // --- ADMIN TABLE ---
+    // --- ADMIN TABLE WITH INLINE QR INJECTION ---
     function renderAdminTable(data) {
         const tbody = document.getElementById('inventoryBody');
         tbody.innerHTML = '';
@@ -1468,7 +1591,13 @@
                 `<span class="badge badge-danger">Sold Out</span>` : 
                 `<span class="badge badge-success">In Stock</span>`;
 
+            // Setup QR preview box block layout elements safely
+            const qrImageTag = i.qrCode ? 
+                `<img src="${i.qrCode}" class="table-qr-thumb" onclick="openQrSpotlightModal('${i.skuId}', '${i.qrCode}')" title="Click to expand matrix label">` : 
+                `<span style="color:var(--text-muted); font-size:0.75rem;">Syncing...</span>`;
+
             row.innerHTML = `
+                <td><div style="text-align:center;">${qrImageTag}</div></td>
                 <td><span class="badge badge-id">${i.skuId || '---'}</span></td>
                 <td>
                     ${imageSection}
