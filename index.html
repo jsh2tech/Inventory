@@ -690,8 +690,10 @@ C. The Mission Statement
                 <label>Selling Price (₱)</label>
                 <input type="number" id="m_sPrice">
             </div>
+            
             <div class="full-width">
                 <label>Update Specifications Fields</label>
+                
                 <div id="modalSpecsGroupLaptop" class="specs-group-box">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
                         <div>
@@ -712,6 +714,7 @@ C. The Mission Statement
                         </div>
                     </div>
                 </div>
+
                 <div id="modalSpecsGroupRam" class="specs-group-box hidden">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
                         <div>
@@ -724,6 +727,7 @@ C. The Mission Statement
                         </div>
                     </div>
                 </div>
+
                 <div id="modalSpecsGroupStorage" class="specs-group-box hidden">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
                         <div>
@@ -744,11 +748,13 @@ C. The Mission Statement
                         </div>
                     </div>
                 </div>
+
                 <div style="margin-top: 15px;">
                     <label>Extra Remarks / Custom Details</label>
                     <textarea id="mSpec_ExtraDetails" rows="3"></textarea>
                 </div>
             </div>
+
             <div class="full-width">
                 <label>Current Product Photos (Max 5 Total)</label>
                 <div id="m_photoEditContainer" class="preview-container" style="margin-bottom:15px; padding:10px; background:#f8fafc; border-radius:8px;"></div>
@@ -771,6 +777,7 @@ C. The Mission Statement
             </div>
             <button class="close-btn" onclick="closeDetailsModal()">&times;</button>
         </div>
+        
         <div class="modal-gallery">
             <div class="carousel-container" id="d_carouselFrame">
                 <button class="carousel-btn prev" id="carouselPrevBtn"><i class="fas fa-chevron-left"></i></button>
@@ -779,18 +786,20 @@ C. The Mission Statement
             </div>
             <div id="d_thumbContainer" class="preview-container"></div>
         </div>
+        
         <div style="margin-bottom: 25px;">
             <span id="d_pCategory" class="badge badge-primary" style="margin-bottom:12px;">Category Tag</span>
             <div style="font-size: 1.65rem; font-weight:700; color: var(--text-main); margin: 5px 0 15px 0;" id="d_pPrice">₱0.00</div>
             <h4 style="margin:0 0 10px 0; font-size:0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing:0.5px;">Product Configuration Details</h4>
             <p id="d_pDetails" style="margin:0; font-size:0.95rem; line-height:1.6; color:var(--text-main); background:#f8fafc; padding:18px; border-radius:12px; border:1px solid var(--border-color); white-space: pre-wrap;"></p>
         </div>
+        
         <h4 style="font-size:0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing:0.5px; margin-bottom:12px;">Select Communication Channel to Inquire</h4>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
             <button class="btn btn-gmail" id="buyBtnGmail">
                 <i class="fa-solid fa-envelope" style="margin-right:10px;"></i>Inquire via Gmail
             </button>
-            <button class="btn btn-sidebar" id="buyBtnMessenger">
+            <button class="btn btn-messenger" id="buyBtnMessenger">
                 <i class="fa-brands fa-facebook-messenger" style="margin-right:10px;"></i>Messenger Chat
             </button>
             <button class="btn btn-whatsapp" id="buyBtnWhatsapp">
@@ -833,308 +842,747 @@ C. The Mission Statement
     const inventoryRef = ref(db, 'inventory');
 
     let fullData = [];
-    let currentRole = 'guest';
+    let currentRole = 'guest'; 
     let currentBase64Images = [];
     let modalEditingBase64Images = [];
     let qrScannerInstance = null;
 
     let currentPage = 1;
-    const itemsPerPage = 10;
+    const itemsPerPage = 10; 
 
-    // View Routing Configuration
-    window.showView = function(viewId, element) {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        
-        const targetView = document.getElementById(viewId);
-        if(targetView) targetView.classList.add('active');
-        if(element) element.classList.add('active');
+    // --- CAROUSEL ENGINE CONTEXT CONFIGS ---
+    let carouselActiveImages = [];
+    let carouselCurrentIndex = 0;
+    let carouselTimer = null;
 
-        if(viewId !== 'v-qr' && qrScannerInstance) {
-            qrScannerInstance.stop().catch(err => console.log(err));
-            qrScannerInstance = null;
+    // --- AUTOMATIC TRACKING ALPHANUMERIC GENERATOR ENGINE ---
+    function generateUniqueSKUID() {
+        const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Clean elements without ambiguous characters (0, O, 1, I)
+        let result = '';
+        for (let i = 0; i < 4; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
         }
+        return `JSH2-Y26-${result}`;
     }
 
-    // Dynamic Specifications Forms Switcher Logic
-    const pCategorySelect = document.getElementById('pCategory');
-    if(pCategorySelect) {
-        pCategorySelect.addEventListener('change', (e) => {
-            const val = e.target.value;
-            document.getElementById('specsGroupLaptop').classList.add('hidden');
-            document.getElementById('specsGroupRam').classList.add('hidden');
-            document.getElementById('specsGroupStorage').classList.add('hidden');
-            if(val === 'Laptop') document.getElementById('specsGroupLaptop').classList.remove('hidden');
-            if(val === 'Ram') document.getElementById('specsGroupRam').classList.remove('hidden');
-            if(val === 'Storage') document.getElementById('specsGroupStorage').classList.remove('hidden');
-        });
+    // --- INITIAL DATA ACCESS SYSTEM TRIGGER ---
+    initDataSync();
+
+    // --- STRATEGIC INTERACTIVE CONTEXT FORM DISPLAY LINKS ---
+    function syncDynamicFormFields(categoryId, laptopBoxId, ramBoxId, storageBoxId) {
+        const catValue = document.getElementById(categoryId).value;
+        const lBox = document.getElementById(laptopBoxId);
+        const rBox = document.getElementById(ramBoxId);
+        const sBox = document.getElementById(storageBoxId);
+
+        if(!lBox || !rBox || !sBox) return;
+
+        lBox.classList.add('hidden');
+        rBox.classList.add('hidden');
+        sBox.classList.add('hidden');
+
+        if (catValue === 'Laptop') lBox.classList.remove('hidden');
+        else if (catValue === 'Ram') rBox.classList.remove('hidden');
+        else if (catValue === 'Storage') sBox.classList.remove('hidden');
     }
 
-    const mCategorySelect = document.getElementById('m_pCategory');
-    if(mCategorySelect) {
-        mCategorySelect.addEventListener('change', (e) => {
-            const val = e.target.value;
-            document.getElementById('modalSpecsGroupLaptop').classList.add('hidden');
-            document.getElementById('modalSpecsGroupRam').classList.add('hidden');
-            document.getElementById('modalSpecsGroupStorage').classList.add('hidden');
-            if(val === 'Laptop') document.getElementById('modalSpecsGroupLaptop').classList.remove('hidden');
-            if(val === 'Ram') document.getElementById('modalSpecsGroupRam').classList.remove('hidden');
-            if(val === 'Storage') document.getElementById('modalSpecsGroupStorage').classList.remove('hidden');
-        });
-    }
-
-    // Core Data Sync Event Listener Hook
-    onValue(inventoryRef, (snapshot) => {
-        const data = snapshot.val();
-        fullData = [];
-        if(data) {
-            for(let id in data) {
-                fullData.push({ id, ...data[id] });
-            }
-        }
-        // Sort items by date descending
-        fullData.sort((a,b) => new Date(b.pDate || 0) - new Date(a.pDate || 0));
-        renderDashboard();
+    // Attach Event Listeners for category dropdown switches
+    document.getElementById('pCategory').addEventListener('change', () => {
+        syncDynamicFormFields('pCategory', 'specsGroupLaptop', 'specsGroupRam', 'specsGroupStorage');
+    });
+    document.getElementById('m_pCategory').addEventListener('change', () => {
+        syncDynamicFormFields('m_pCategory', 'modalSpecsGroupLaptop', 'modalSpecsGroupRam', 'modalSpecsGroupStorage');
     });
 
-    // UPDATED: Dynamic Sales Valuation metrics & Dashboard logic
-    function renderDashboard() {
-        let totalProfit = 0;
-        let totalLoss = 0;
-        let netProfit = 0;
-        
-        const monthlyAggregation = {};
-
-        fullData.forEach(item => {
-            const buyingPrice = parseFloat(item.bPrice) || 0;
-            const sellingPrice = parseFloat(item.sPrice) || 0;
-            const quantity = parseInt(item.qty) || 1;
-
-            // CHANGED: Force Net Profit directly from (Selling Price - Buying Price)
-            const calculatedProfitValuation = (sellingPrice - buyingPrice) * quantity;
-
-            if (calculatedProfitValuation > 0) {
-                totalProfit += calculatedProfitValuation;
-            } else if (calculatedProfitValuation < 0) {
-                totalLoss += Math.abs(calculatedProfitValuation);
-            }
-
-            // Aggregate Monthly breakdown
-            if(item.pDate) {
-                const dateObj = new Date(item.pDate);
-                if(!isNaN(dateObj)) {
-                    const monthKey = dateObj.toLocaleString('default', { month: 'short', year: 'numeric' });
-                    if(!monthlyAggregation[monthKey]) monthlyAggregation[monthKey] = 0;
-                    monthlyAggregation[monthKey] += calculatedProfitValuation;
-                }
-            }
-        });
-
-        // Net Profit evaluation derived cleanly from the results
-        netProfit = totalProfit - totalLoss;
-
-        // Render KPI Elements securely
-        const pEl = document.getElementById('kpi-pos');
-        const lEl = document.getElementById('kpi-neg');
-        const nEl = document.getElementById('kpi-net');
-
-        if(pEl) pEl.innerText = `₱${totalProfit.toLocaleString('en-US', {minimumFractionDigits:2})}`;
-        if(lEl) lEl.innerText = `₱${totalLoss.toLocaleString('en-US', {minimumFractionDigits:2})}`;
-        
-        if(nEl) {
-            nEl.innerText = `₱${netProfit.toLocaleString('en-US', {minimumFractionDigits:2})}`;
-            if(netProfit >= 0) {
-                nEl.style.color = "var(--success)";
-            } else {
-                nEl.style.color = "var(--danger)";
-            }
+    // --- COMPONENT TEXT STRINGS PACKERS & UNPACKERS ENGINE ---
+    function compileSpecificationsText(category, prefix) {
+        let compiled = "";
+        if (category === 'Laptop') {
+            compiled += `Processor: ${document.getElementById(prefix + 'Spec_Processor').value}\n`;
+            compiled += `RAM: ${document.getElementById(prefix + 'Spec_LaptopRam').value}\n`;
+            compiled += `Storage: ${document.getElementById(prefix + 'Spec_LaptopStorage').value}\n`;
+            compiled += `Battery: ${document.getElementById(prefix + 'Spec_Battery').value}\n`;
+        } else if (category === 'Ram') {
+            compiled += `Ram type: ${document.getElementById(prefix + 'Spec_RamType').value}\n`;
+            compiled += `Ram speed: ${document.getElementById(prefix + 'Spec_RamSpeed').value}\n`;
+        } else if (category === 'Storage') {
+            compiled += `Storage type: ${document.getElementById(prefix + 'Spec_StorageType').value}\n`;
+            compiled += `Storage size: ${document.getElementById(prefix + 'Spec_StorageSize').value}\n`;
+            compiled += `Health: ${document.getElementById(prefix + 'Spec_StorageHealth').value}\n`;
+            compiled += `Performance: ${document.getElementById(prefix + 'Spec_StoragePerf').value}\n`;
         }
-
-        // Render Monthly scrollable metrics row
-        const mGrid = document.getElementById('monthlyGrid');
-        if(mGrid) {
-            mGrid.innerHTML = '';
-            for(let month in monthlyAggregation) {
-                const mProfit = monthlyAggregation[month];
-                const card = document.createElement('div');
-                card.style.cssText = "background:var(--card); padding:15px; border-radius:10px; border:1px solid var(--border-color); min-width:140px; text-align:center;";
-                card.innerHTML = `
-                    <div style="font-size:0.78rem; text-transform:uppercase; color:var(--text-muted); font-weight:600;">${month}</div>
-                    <div style="font-size:1.1rem; font-weight:700; margin-top:5px; color:${mProfit >= 0 ? 'var(--success)' : 'var(--danger)'}">
-                        ₱${mProfit.toLocaleString('en-US', {maximumFractionDigits:0})}
-                    </div>
-                `;
-                mGrid.appendChild(card);
-            }
+        
+        const extra = document.getElementById(prefix + 'Spec_ExtraDetails').value.trim();
+        if (extra) {
+            compiled += `Extra Details: ${extra}`;
         }
-
-        // Forward to secondary views filter processes
-        filterAndRenderLists();
+        return compiled;
     }
 
-    // Filter, Search, and Router Pagination Engine logic
-    function filterAndRenderLists() {
-        const query = document.getElementById('searchBar').value.toLowerCase();
-        
-        const filtered = fullData.filter(i => {
-            const matchName = (i.pName || '').toLowerCase().includes(query);
-            const matchSku = (i.skuId || '').toLowerCase().includes(query);
-            const matchCat = (i.pCategory || '').toLowerCase().includes(query);
+    function unpackSpecificationsText(category, fullText, prefix) {
+        const elements = [
+            'Spec_Processor', 'Spec_LaptopRam', 'Spec_LaptopStorage', 'Spec_Battery',
+            'Spec_RamType', 'Spec_RamSpeed', 'Spec_StorageType', 'Spec_StorageSize',
+            'Spec_StorageHealth', 'Spec_StoragePerf', 'Spec_ExtraDetails'
+        ];
+        elements.forEach(id => {
+            const el = document.getElementById(prefix + id);
+            if(el) el.value = "";
+        });
+
+        if (!fullText) return;
+
+        const lines = fullText.split('\n');
+        let extraDetailsBuffer = [];
+
+        lines.forEach(line => {
+            if (!line.includes(':')) {
+                if (line.trim()) extraDetailsBuffer.push(line);
+                return;
+            }
             
-            let matchSpecs = false;
-            if(i.specs) {
-                for(let key in i.specs) {
-                    if(String(i.specs[key]).toLowerCase().includes(query)) matchSpecs = true;
-                }
+            const splitIdx = line.indexOf(':');
+            const label = line.substring(0, splitIdx).toLowerCase().trim();
+            const value = line.substring(splitIdx + 1).trim();
+
+            if (category === 'Laptop') {
+                if (label === 'processor') document.getElementById(prefix + 'Spec_Processor').value = value;
+                else if (label === 'ram') document.getElementById(prefix + 'Spec_LaptopRam').value = value;
+                else if (label === 'storage') document.getElementById(prefix + 'Spec_LaptopStorage').value = value;
+                else if (label === 'battery') document.getElementById(prefix + 'Spec_Battery').value = value;
+                else if (label === 'extra details') document.getElementById(prefix + 'Spec_ExtraDetails').value = value;
+                else if (line.trim()) extraDetailsBuffer.push(line);
+            } else if (category === 'ram' || label === 'ram type') {
+                if (label === 'ram type') document.getElementById(prefix + 'Spec_RamType').value = value;
+                else if (label === 'ram speed') document.getElementById(prefix + 'Spec_RamSpeed').value = value;
+                else if (label === 'extra details') document.getElementById(prefix + 'Spec_ExtraDetails').value = value;
+                else if (line.trim()) extraDetailsBuffer.push(line);
+            } else if (category === 'Storage') {
+                if (label === 'storage type') document.getElementById(prefix + 'Spec_StorageType').value = value;
+                else if (label === 'storage size') document.getElementById(prefix + 'Spec_StorageSize').value = value;
+                else if (label === 'health') document.getElementById(prefix + 'Spec_StorageHealth').value = value;
+                else if (label === 'performance') document.getElementById(prefix + 'Spec_StoragePerf').value = value;
+                else if (label === 'extra details') document.getElementById(prefix + 'Spec_ExtraDetails').value = value;
+                else if (line.trim()) extraDetailsBuffer.push(line);
             }
-            return matchName || matchSku || matchCat || matchSpecs;
         });
 
-        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-        if (currentPage > totalPages) currentPage = totalPages;
-        
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const pageData = filtered.slice(startIndex, startIndex + itemsPerPage);
-
-        renderAdminTable(pageData);
-        renderGuestCatalog(pageData);
-        renderPaginationControls(totalPages);
-        renderHistory(filtered);
+        if (extraDetailsBuffer.length > 0) {
+            const currentExtra = document.getElementById(prefix + 'Spec_ExtraDetails').value;
+            const appended = currentExtra ? currentExtra + "\n" + extraDetailsBuffer.join('\n') : extraDetailsBuffer.join('\n');
+            document.getElementById(prefix + 'Spec_ExtraDetails').value = appended;
+        }
     }
 
-    document.getElementById('searchBar').addEventListener('input', () => {
-        currentPage = 1;
-        filterAndRenderLists();
+    // --- COEXISTING DESKTOP & MOBILE BACKDOOR ENGINE ---
+    function triggerAdminPortal() {
+        const authSection = document.getElementById('authSection');
+        if (authSection) {
+            authSection.classList.remove('hidden');
+            const authEmailField = document.getElementById('authEmail');
+            if (authEmailField) authEmailField.focus();
+        }
+    }
+
+    window.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'a') {
+            event.preventDefault(); 
+            triggerAdminPortal();
+        }
     });
 
-    // Inventory Table Renderer (Admin Access Only view)
-    function renderAdminTable(data) {
-        const tbody = document.getElementById('inventoryBody');
-        if(!tbody) return;
-        tbody.innerHTML = '';
+    const brandTrigger = document.getElementById('brandTrigger');
+    let touchTimer = null;
+    let longPressedTriggered = false;
 
-        if(data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:30px;">No registered infrastructure items found matching search array parameters.</td></tr>`;
+    if (brandTrigger) {
+        brandTrigger.addEventListener('touchstart', function(e) {
+            longPressedTriggered = false;
+            if (touchTimer) clearTimeout(touchTimer);
+            touchTimer = setTimeout(function() {
+                longPressedTriggered = true;
+                triggerAdminPortal();
+            }, 2500); 
+        }, { passive: true });
+
+        brandTrigger.addEventListener('touchend', function(e) {
+            if (touchTimer) clearTimeout(touchTimer);
+            if (longPressedTriggered) {
+                if(e.cancelable) e.preventDefault();
+            }
+        });
+
+        brandTrigger.addEventListener('touchmove', function(e) {
+            if (touchTimer) clearTimeout(touchTimer);
+        }, { passive: true });
+    }
+
+    // --- PHOTO PROCESSING ---
+    document.getElementById('pPhotos').addEventListener('change', function(e) {
+        const files = Array.from(e.target.files).slice(0, 5);
+        currentBase64Images = [];
+        const previewContainer = document.getElementById('photoPreviewContainer');
+        previewContainer.innerHTML = '';
+
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                currentBase64Images.push(evt.target.result);
+                const img = document.createElement('img');
+                img.src = evt.target.result;
+                img.classList.add('preview-img');
+                img.style.opacity = '1';
+                previewContainer.appendChild(img);
+            }
+            reader.readAsDataURL(file);
+        });
+    });
+
+    document.getElementById('m_pPhotosAppend').addEventListener('change', function(e) {
+        const slotsAvailable = 5 - modalEditingBase64Images.length;
+        if(slotsAvailable <= 0) {
+            alert("Maximum capacity of 5 photos reached.");
+            e.target.value = '';
             return;
         }
+        const files = Array.from(e.target.files).slice(0, slotsAvailable);
+        
+        let filesProcessed = 0;
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                modalEditingBase64Images.push(evt.target.result);
+                filesProcessed++;
+                if(filesProcessed === files.length) {
+                    renderEditModalThumbnails();
+                    e.target.value = '';
+                }
+            }
+            reader.readAsDataURL(file);
+        });
+    });
 
-        data.forEach(i => {
-            const row = tbody.insertRow();
+    function renderEditModalThumbnails() {
+        const container = document.getElementById('m_photoEditContainer');
+        container.innerHTML = '';
+        if(modalEditingBase64Images.length === 0) {
+            container.innerHTML = `<span style="font-size:0.85rem; color:var(--text-muted)">No configuration graphics assigned.</span>`;
+            return;
+        }
+        modalEditingBase64Images.forEach((imgSrc, index) => {
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('preview-wrapper');
             
-            // Build Specifications string to view as quick details label snippet
-            let specSnippet = '';
-            if(i.specs) {
-                if(i.pCategory === 'Laptop') specSnippet = `${i.specs.Processor || ''} | ${i.specs.LaptopRam || ''} | ${i.specs.LaptopStorage || ''}`;
-                else if(i.pCategory === 'Ram') specSnippet = `${i.specs.RamType || ''} | ${i.specs.RamSpeed || ''}`;
-                else if(i.pCategory === 'Storage') specSnippet = `${i.specs.StorageType || ''} | ${i.specs.StorageSize || ''}`;
-                if(i.specs.ExtraDetails) specSnippet += ` (${i.specs.ExtraDetails})`;
+            const img = document.createElement('img');
+            img.src = imgSrc;
+            img.classList.add('preview-img');
+            img.style.opacity = '1';
+            
+            const removeOverlay = document.createElement('div');
+            removeOverlay.classList.add('remove-img-overlay');
+            removeOverlay.innerHTML = '&times;';
+            removeOverlay.onclick = () => {
+                modalEditingBase64Images.splice(index, 1);
+                renderEditModalThumbnails();
+            };
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeOverlay);
+            container.appendChild(wrapper);
+        });
+    }
+
+    // --- QR CODE SCANNER INITIALIZATION ENGINE ---
+    document.getElementById('startCamBtn').onclick = () => {
+        if (qrScannerInstance) {
+            qrScannerInstance.clear();
+        }
+        
+        qrScannerInstance = new Html5QrcodeScanner("reader", { 
+            fps: 10, 
+            qrbox: { width: 250, height: 250 },
+            rememberLastUsedCamera: true
+        }, false);
+        
+        qrScannerInstance.render((decodedText) => {
+            document.getElementById('searchBar').value = decodedText.trim();
+            document.getElementById('searchBar').dispatchEvent(new Event('input'));
+            showView('v-list', document.getElementById('navList'));
+            
+            if(qrScannerInstance) {
+                qrScannerInstance.clear().catch(err => console.log(err));
+            }
+        }, (errorMessage) => {
+            // Drop stream trace errors safely
+        });
+    };
+
+    // --- GATEWAY LAYER ROUTING MIGRATIONS ---
+    function configureUIVisibility() {
+        if(currentRole === 'admin') {
+            document.body.classList.add('admin-mode-active');
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+            document.getElementById('adminTableContainer').classList.remove('hidden');
+            document.getElementById('guestCatalogContainer').classList.add('hidden');
+            document.getElementById('paginationControls').classList.add('hidden');
+            showView('v-dash', document.getElementById('navDash'));
+        } else {
+            document.body.classList.remove('admin-mode-active');
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+            document.getElementById('adminTableContainer').classList.add('hidden');
+            document.getElementById('guestCatalogContainer').classList.remove('hidden');
+            document.getElementById('paginationControls').classList.remove('hidden');
+            showView('v-list', null);
+        }
+        currentPage = 1;
+        filterAndRenderLayouts(fullData);
+        syncDynamicFormFields('pCategory', 'specsGroupLaptop', 'specsGroupRam', 'specsGroupStorage');
+    }
+
+    window.closeAuthModal = () => { document.getElementById('authSection').classList.add('hidden'); };
+
+    window.showView = (id, el) => {
+        if (id !== 'v-qr' && qrScannerInstance) {
+            qrScannerInstance.clear().catch(err => console.log(err));
+        }
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        if(el) el.classList.add('active');
+    };
+
+    window.logout = () => {
+        if (qrScannerInstance) qrScannerInstance.clear().catch(err => console.log(err));
+        signOut(auth).then(() => {
+            currentRole = 'guest';
+            configureUIVisibility();
+        });
+    };
+
+    window.deleteItem = (id) => {
+        if(confirm("Are you sure you want to delete this product?")) remove(ref(db, 'inventory/'+id));
+    };
+
+    window.editItem = (id) => {
+        const item = fullData.find(x => x.id === id);
+        if(!item) return;
+        
+        document.getElementById('m_editId').value = id;
+        document.getElementById('m_skuId').value = item.skuId || '';
+        document.getElementById('m_displaySku').innerText = `(${item.skuId || 'No ID'})`;
+        document.getElementById('m_pName').value = item.name || '';
+        document.getElementById('m_pCategory').value = item.category || 'Laptop';
+        document.getElementById('m_pStatus').value = item.status || 'available';
+        document.getElementById('m_pDate').value = item.date || '';
+        document.getElementById('m_qty').value = item.qty || 0;
+        document.getElementById('m_bPrice').value = item.buy || 0;
+        document.getElementById('m_sPrice').value = item.sell || 0;
+        
+        syncDynamicFormFields('m_pCategory', 'modalSpecsGroupLaptop', 'modalSpecsGroupRam', 'modalSpecsGroupStorage');
+        unpackSpecificationsText(item.category || 'Laptop', item.details || '', 'm');
+
+        modalEditingBase64Images = item.images ? [...item.images] : [];
+        renderEditModalThumbnails();
+        
+        document.getElementById('editModal').classList.remove('hidden');
+    };
+
+    window.closeEditModal = () => { document.getElementById('editModal').classList.add('hidden'); };
+
+    // --- DYNAMIC CAROUSEL SLIDE MANAGEMENT RUNTIME ---
+    function updateCarouselDisplay(index, resetTimer = false) {
+        if (carouselActiveImages.length === 0) return;
+        
+        // Handle bounding limits
+        if (index >= carouselActiveImages.length) carouselCurrentIndex = 0;
+        else if (index < 0) carouselCurrentIndex = carouselActiveImages.length - 1;
+        else carouselCurrentIndex = index;
+
+        // Apply smooth transition fade logic
+        const mainImg = document.getElementById('d_mainImg');
+        mainImg.style.opacity = '0.3';
+        
+        setTimeout(() => {
+            mainImg.src = carouselActiveImages[carouselCurrentIndex];
+            mainImg.style.opacity = '1';
+        }, 150);
+
+        // Update Thumbnails active tracking state highlights
+        const thumbs = document.querySelectorAll('#d_thumbContainer img');
+        thumbs.forEach((thumb, idx) => {
+            if(idx === carouselCurrentIndex) thumb.classList.add('active');
+            else thumb.classList.remove('active');
+        });
+
+        // Kill automation sequence if user triggers manual navigation override
+        if (resetTimer && carouselTimer) {
+            clearInterval(carouselTimer);
+            carouselTimer = null;
+        }
+    }
+
+    function startCarouselAutomation() {
+        if (carouselTimer) clearInterval(carouselTimer);
+        if (carouselActiveImages.length <= 1) return; // No rotation needed for single photo setups
+        
+        carouselTimer = setInterval(() => {
+            carouselCurrentIndex++;
+            updateCarouselDisplay(carouselCurrentIndex, false);
+        }, 3000); // 3 Seconds Interval Window Switch Frame Loop
+    }
+
+    // Attach Click actions to Navigation Arrow overlays
+    document.getElementById('carouselPrevBtn').onclick = () => {
+        carouselCurrentIndex--;
+        updateCarouselDisplay(carouselCurrentIndex, true);
+    };
+    document.getElementById('carouselNextBtn').onclick = () => {
+        carouselCurrentIndex++;
+        updateCarouselDisplay(carouselCurrentIndex, true);
+    };
+
+    window.openDetailsModal = (id) => {
+        const item = fullData.find(x => x.id === id);
+        if(!item) return;
+
+        document.getElementById('d_pName').innerText = item.name || 'Product Details';
+        document.getElementById('d_skuId').innerText = item.skuId || 'NO ID ASSIGNED';
+        document.getElementById('d_pCategory').innerText = item.category || 'Unassigned';
+        document.getElementById('d_pPrice').innerText = "₱" + (item.sell || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('d_pDetails').innerText = item.details || 'No catalogue specifications provided.';
+
+        const mainImg = document.getElementById('d_mainImg');
+        const thumbContainer = document.getElementById('d_thumbContainer');
+        const prevBtn = document.getElementById('carouselPrevBtn');
+        const nextBtn = document.getElementById('carouselNextBtn');
+        
+        thumbContainer.innerHTML = '';
+        carouselActiveImages = item.images ? [...item.images] : [];
+        carouselCurrentIndex = 0;
+
+        if(carouselActiveImages.length > 0) {
+            mainImg.src = carouselActiveImages[0];
+            mainImg.classList.remove('hidden');
+            
+            // Toggle visibility parameters of controls based on graphics availability length
+            if (carouselActiveImages.length > 1) {
+                prevBtn.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
+            } else {
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+            }
+            
+            carouselActiveImages.forEach((imgBase64, index) => {
+                const thumb = document.createElement('img');
+                thumb.src = imgBase64;
+                thumb.classList.add('preview-img');
+                if(index === 0) thumb.classList.add('active');
+                
+                thumb.onclick = () => { 
+                    updateCarouselDisplay(index, true); 
+                };
+                thumbContainer.appendChild(thumb);
+            });
+
+            // Fire Carousel Interval Automation Runtime Thread 
+            startCarouselAutomation();
+        } else {
+            mainImg.src = '';
+            mainImg.classList.add('hidden');
+            prevBtn.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            if(carouselTimer) clearInterval(carouselTimer);
+        }
+
+        document.getElementById('buyBtnGmail').onclick = () => sendGmailInquiry(item.name, item.skuId, item.sell);
+        document.getElementById('buyBtnMessenger').onclick = () => sendMessengerInquiry(item.name, item.skuId, item.sell);
+        document.getElementById('buyBtnWhatsapp').onclick = () => sendWhatsappInquiry(item.name, item.skuId, item.sell);
+
+        document.getElementById('detailsModal').classList.remove('hidden');
+    };
+
+    window.closeDetailsModal = () => { 
+        document.getElementById('detailsModal').classList.add('hidden'); 
+        if(carouselTimer) {
+            clearInterval(carouselTimer);
+            carouselTimer = null;
+        }
+    };
+
+    // --- COMMUNICATIONS PLUGINS WITH SKU INJECTION ---
+    function sendGmailInquiry(name, sku, price) {
+        const recipient = "hopeband22@gmail.com";
+        const subject = encodeURIComponent(`Inquiry: ${name} [${sku}]`);
+        const body = encodeURIComponent(`Hello JSH2Tech Solutions,\n\nI am interested in acquiring this unit:\n\nProduct: ${name}\nRef Code: ${sku}\nPrice: ₱${(price || 0).toLocaleString()}\n\nPlease confirm availability.\n\nThank you!`);
+        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${body}`, '_blank');
+    }
+
+    function sendMessengerInquiry(name, sku, price) {
+        window.open(`https://m.me/100000595169081`, '_blank');
+    }
+
+    function sendWhatsappInquiry(name, sku, price) {
+        const message = encodeURIComponent(`Hello JSH2Tech Solutions, I am checking availability for item ${name} Code: [${sku}] priced at PHP ${(price || 0).toLocaleString()}.`);
+        window.open(`https://api.whatsapp.com/send?phone=639123456789&text=${message}`, '_blank');
+    }
+
+    // --- AUTH BACKEND ---
+    const authBtn = document.getElementById('authBtn');
+    authBtn.onclick = () => {
+        const e = document.getElementById('authEmail').value;
+        const p = document.getElementById('authPwd').value;
+        signInWithEmailAndPassword(auth, e, p)
+            .then(() => {
+                closeAuthModal();
+                document.getElementById('authEmail').value = '';
+                document.getElementById('authPwd').value = '';
+            })
+            .catch(err => alert("Authentication Failed: " + err.message));
+    };
+
+    onAuthStateChanged(auth, (user) => {
+        if(user) { currentRole = 'admin'; configureUIVisibility(); } 
+        else { currentRole = 'guest'; configureUIVisibility(); }
+    });
+
+    function initDataSync() {
+        onValue(inventoryRef, (snap) => {
+            const data = snap.val();
+            fullData = [];
+            for(let key in data) fullData.push({ id: key, ...data[key] });
+            renderDashboard();
+        });
+    }
+
+    // --- DATA MUTATION ACTIONS (WITH AUTOMATIC UNIQUE ID ASSIGNMENT) ---
+    document.getElementById('actionBtn').onclick = () => {
+        const name = document.getElementById('pName').value;
+        const category = document.getElementById('pCategory').value;
+        const status = document.getElementById('pStatus').value;
+        const date = document.getElementById('pDate').value;
+        const b = parseFloat(document.getElementById('bPrice').value) || 0;
+        const s = parseFloat(document.getElementById('sPrice').value) || 0;
+        const q = parseInt(document.getElementById('qty').value) || 0;
+        
+        if(!name) return alert("Please enter a valid product name.");
+        
+        const details = compileSpecificationsText(category, 'add');
+        const skuId = generateUniqueSKUID(); // Automatic assignment hook integration
+        
+        const payload = { skuId, name, category, status, date, buy: b, sell: s, qty: q, details, images: currentBase64Images, profit: (s - b) * q };
+        
+        push(inventoryRef, payload).then(() => {
+            alert(`Product saved successfully with Tracking Key: ${skuId}`);
+            document.querySelectorAll('#v-add input').forEach(i => i.value = '');
+            document.getElementById('addSpec_ExtraDetails').value = '';
+            document.getElementById('pStatus').value = 'available';
+            document.getElementById('photoPreviewContainer').innerHTML = '';
+            currentBase64Images = [];
+            syncDynamicFormFields('pCategory', 'specsGroupLaptop', 'specsGroupRam', 'specsGroupStorage');
+        });
+    };
+
+    document.getElementById('saveEditBtn').onclick = () => {
+        const id = document.getElementById('m_editId').value;
+        const skuId = document.getElementById('m_skuId').value || generateUniqueSKUID(); 
+        const name = document.getElementById('m_pName').value;
+        const category = document.getElementById('m_pCategory').value;
+        const status = document.getElementById('m_pStatus').value;
+        const date = document.getElementById('m_pDate').value;
+        const b = parseFloat(document.getElementById('m_bPrice').value) || 0;
+        const s = parseFloat(document.getElementById('m_sPrice').value) || 0;
+        const q = parseInt(document.getElementById('m_qty').value) || 0;
+        
+        const details = compileSpecificationsText(category, 'm');
+
+        const payload = { skuId, name, category, status, date, buy: b, sell: s, qty: q, details, images: modalEditingBase64Images, profit: (s - b) * q };
+        
+        update(ref(db, 'inventory/' + id), payload).then(() => { window.closeEditModal(); });
+    };
+
+    // --- SEARCH FILTERS TRIGGER ---
+    document.getElementById('searchBar').oninput = () => {
+        currentPage = 1; 
+        renderDashboard();
+    };
+
+    function getFilteredData() {
+        const val = document.getElementById('searchBar').value.toLowerCase().trim();
+        return fullData.filter(i => {
+            const matchesSearch = i.name.toLowerCase().includes(val) || 
+                                 (i.skuId && i.skuId.toLowerCase().includes(val)) ||
+                                 (i.details && i.details.toLowerCase().includes(val)) ||
+                                 i.category.toLowerCase().includes(val);
+            if (currentRole === 'admin') return matchesSearch;
+            return matchesSearch && i.qty >= 1 && i.status !== 'sold';
+        });
+    }
+
+    function renderDashboard() {
+        const filtered = getFilteredData();
+        filterAndRenderLayouts(filtered);
+        renderHistory(fullData);
+        
+        let pos = 0, neg = 0, monthly = {};
+        fullData.forEach(i => {
+            const p = i.profit || 0;
+            if(p >= 0) pos += p; else neg += p;
+            const d = new Date(i.date || Date.now());
+            const key = d.getFullYear() + "-" + (d.getMonth()+1);
+            if(!monthly[key]) monthly[key] = { p: 0, label: d.toLocaleString('default', {month:'short', year:'2-digit'}) };
+            monthly[key].p += p;
+        });
+
+        if (document.getElementById('kpi-pos')) document.getElementById('kpi-pos').innerText = "₱" + pos.toLocaleString();
+        if (document.getElementById('kpi-neg')) document.getElementById('kpi-neg').innerText = "₱" + Math.abs(neg).toLocaleString();
+        if (document.getElementById('kpi-net')) document.getElementById('kpi-net').innerText = "₱" + (pos+neg).toLocaleString();
+
+        const mGrid = document.getElementById('monthlyGrid');
+        if (mGrid) {
+            mGrid.innerHTML = '';
+            Object.keys(monthly).sort().reverse().forEach(k => {
+                mGrid.innerHTML += `
+                    <div class="kpi-card" style="min-width: 140px; text-align: center; padding: 15px; border-top: 3px solid var(--primary);">
+                        <h4 style="margin:0; font-size: 0.75rem;">${monthly[k].label}</h4>
+                        <p style="margin: 5px 0 0; font-weight:700; color:var(--text-main)">₱${monthly[k].p.toLocaleString()}</p>
+                    </div>`;
+            });
+        }
+    }
+
+    function filterAndRenderLayouts(items) {
+        if(currentRole === 'admin') renderAdminTable(items);
+        else renderGuestCatalogWithPagination(items);
+    }
+
+    // --- ADMIN TABLE ---
+    function renderAdminTable(data) {
+        const tbody = document.getElementById('inventoryBody');
+        tbody.innerHTML = '';
+        
+        data.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(i => {
+            const row = tbody.insertRow();
+            let imageSection = '';
+            if(i.images && i.images.length > 0){
+                imageSection = `<div class="preview-container" style="margin-bottom:8px;">`;
+                i.images.forEach(imgBase64 => {
+                    imageSection += `<img src="${imgBase64}" class="preview-img" style="width:40px; height:40px; opacity:1;" />`;
+                });
+                imageSection += `</div>`;
             }
 
-            const bPriceNum = parseFloat(i.bPrice) || 0;
-            const sPriceNum = parseFloat(i.sPrice) || 0;
+            const statusLabel = (i.status === 'sold') ? 
+                `<span class="badge badge-danger">Sold Out</span>` : 
+                `<span class="badge badge-success">In Stock</span>`;
 
             row.innerHTML = `
                 <td><span class="badge badge-id">${i.skuId || '---'}</span></td>
                 <td>
-                    <span style="font-weight:600; color:var(--text-main); cursor:pointer;" onclick="openDetailsModal('${i.id}')">${i.pName}</span>
-                    <br><small style="color:var(--text-muted); font-size:0.8rem;">${specSnippet}</small>
+                    ${imageSection}
+                    <strong>${i.name}</strong><br>
+                    <small style="color:var(--text-main); display:block; max-width:300px; white-space:pre-wrap; background:#f8fafc; padding:5px; border-radius:4px; font-size:0.8rem; margin-top:4px; border:1px solid var(--border-color);">${i.details || 'No structural specification detail records.'}</small>
                 </td>
-                <td>₱${bPriceNum.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                <td>₱${sPriceNum.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                <td><span class="badge badge-primary">${i.pCategory}</span></td>
-                <td>${i.pDate || 'N/A'}</td>
+                <td>₱${(i.buy || 0).toLocaleString()}</td>
+                <td>₱${(i.sell || 0).toLocaleString()}</td>
+                <td><span class="badge badge-primary">${i.category || 'Unassigned'}</span></td>
+                <td>${i.date || '---'}</td>
                 <td>
-                    <span class="badge ${i.pStatus === 'available' ? 'badge-success' : 'badge-danger'}">${i.pStatus}</span>
-                    <br><small style="color:var(--text-muted); font-size:0.75rem; font-weight:500;">Qty: ${i.qty || 1}</small>
+                    <strong>${i.qty} Qty</strong><br>
+                    <div style="margin-top: 4px;">${statusLabel}</div>
                 </td>
                 <td>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn btn-warning" onclick="openEditModal('${i.id}')" style="padding:6px 10px; font-size:0.75rem;"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-danger" onclick="deleteProduct('${i.id}')" style="padding:6px 10px; font-size:0.75rem;"><i class="fas fa-trash-alt"></i></button>
-                    </div>
+                    <button class="btn" style="background:#f1f5f9; color:var(--warning); padding:6px 10px; margin-bottom:2px;" onclick="editItem('${i.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn" style="background:#f1f5f9; color:var(--danger); padding:6px 10px;" onclick="deleteItem('${i.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </td>
             `;
         });
     }
 
-    // Public Product Grid Showcase Cards Layout (Guest view fallback default)
-    function renderGuestCatalog(data) {
+    // --- GUEST MARKETPLACE ---
+    function renderGuestCatalogWithPagination(data) {
         const container = document.getElementById('guestCatalogContainer');
-        if(!container) return;
         container.innerHTML = '';
 
         if(data.length === 0) {
-            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:40px; width:100%;">No available catalog listings found matching specifications matrix inputs.</div>`;
+            container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 40px; width: 100%;">No available units match your search constraints.</p>`;
+            document.getElementById('paginationControls').innerHTML = '';
             return;
         }
 
-        // Generate blocks structured dynamically containing 5 cards entries maximum
-        let currentBlock = document.createElement('div');
-        currentBlock.classList.add('catalog-row-block');
-        container.appendChild(currentBlock);
+        data.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-        data.forEach((i, index) => {
-            if(index > 0 && index % 5 === 0) {
-                currentBlock = document.createElement('div');
-                currentBlock.classList.add('catalog-row-block');
-                container.appendChild(currentBlock);
-            }
+        const totalPages = Math.ceil(data.length / itemsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+        
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const paginatedItems = data.slice(startIndex, endIndex);
 
+        const firstRowBlock = document.createElement('div');
+        firstRowBlock.classList.add('catalog-row-block');
+        const secondRowBlock = document.createElement('div');
+        secondRowBlock.classList.add('catalog-row-block');
+
+        paginatedItems.forEach((item, index) => {
             const card = document.createElement('div');
             card.classList.add('catalog-card');
-            card.onclick = () => openDetailsModal(i.id);
+            card.onclick = () => openDetailsModal(item.id);
 
-            let imgHtml = `<div class="catalog-img-placeholder"><i class="fas fa-laptop-code"></i></div>`;
-            if(i.images && i.images.length > 0) {
-                imgHtml = `<img src="${i.images[0]}" alt="Hardware Unit Visualization Pipeline">`;
+            let imgTag = `<div class="catalog-img-placeholder"><i class="fa-regular fa-image"></i></div>`;
+            if(item.images && item.images.length > 0) {
+                imgTag = `<img src="${item.images[0]}" alt="Product catalogue visualization">`;
             }
-
-            let descSnippet = 'No explicit custom configuration modifications notes defined for asset registry item node.';
-            if(i.specs && i.specs.ExtraDetails) descSnippet = i.specs.ExtraDetails;
-            else if(i.specs) {
-                if(i.pCategory === 'Laptop') descSnippet = `Processor: ${i.specs.Processor || 'N/A'} | System Memory Size: ${i.specs.LaptopRam || 'N/A'} | Drive Capacity: ${i.specs.LaptopStorage || 'N/A'}`;
-                else if(i.pCategory === 'Ram') descSnippet = `Memory Type Generation: ${i.specs.RamType || 'N/A'} | Clock Speed Frequency: ${i.specs.RamSpeed || 'N/A'}`;
-                else if(i.pCategory === 'Storage') descSnippet = `Interface Architecture: ${i.specs.StorageType || 'N/A'} | Spatial Volume Capacity: ${i.specs.StorageSize || 'N/A'}`;
-            }
-
-            const sPriceNum = parseFloat(i.sPrice) || 0;
 
             card.innerHTML = `
-                <div class="catalog-img-frame">${imgHtml}</div>
+                <div class="catalog-img-frame">${imgTag}</div>
                 <div class="catalog-info">
-                    <div class="catalog-title">${i.pName}</div>
-                    <div class="catalog-desc">${descSnippet}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                        <span class="badge badge-primary">${item.category || 'Product'}</span>
+                        <span class="badge badge-id" style="font-size:0.65rem;">${item.skuId || 'N/A'}</span>
+                    </div>
+                    <h3 class="catalog-title">${item.name}</h3>
+                    <p class="catalog-desc" style="white-space: pre-line;">${item.details || 'Click to view configuration arrays.'}</p>
                     <div class="catalog-footer">
-                        <div class="catalog-price">₱${sPriceNum.toLocaleString('en-US', {minimumFractionDigits:2})}</div>
-                        <span class="badge ${i.pStatus === 'available' ? 'badge-success' : 'badge-danger'}">${i.pStatus}</span>
+                        <div class="catalog-price">₱${(item.sell || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                        <span style="font-size: 0.8rem; font-weight:600; color: var(--success);"><i class="fa-solid fa-circle-check"></i> Available</span>
                     </div>
                 </div>
             `;
-            currentBlock.appendChild(card);
+
+            if (index < 5) firstRowBlock.appendChild(card);
+            else secondRowBlock.appendChild(card);
         });
+
+        if (firstRowBlock.children.length > 0) container.appendChild(firstRowBlock);
+        if (secondRowBlock.children.length > 0) container.appendChild(secondRowBlock);
+
+        renderPaginationControls(totalPages);
     }
 
-    // Dynamic Pagination Buttons layout engine
     function renderPaginationControls(totalPages) {
         const controlsContainer = document.getElementById('paginationControls');
-        if(!controlsContainer) return;
         controlsContainer.innerHTML = '';
-
-        if(totalPages <= 1) return;
+        if (totalPages <= 1) return;
 
         const prevBtn = document.createElement('button');
-        pageBtn.classList.add('page-btn');
+        prevBtn.classList.add('page-btn');
         prevBtn.innerHTML = `<i class="fas fa-chevron-left"></i>`;
         prevBtn.disabled = (currentPage === 1);
-        prevBtn.onclick = () => { currentPage--; filterAndRenderLists(); window.scrollTo({top: 0, behavior: 'smooth'}); };
+        prevBtn.onclick = () => { currentPage--; renderDashboard(); window.scrollTo({top: 0, behavior: 'smooth'}); };
         controlsContainer.appendChild(prevBtn);
 
-        for(let i=1; i<=totalPages; i++) {
+        for (let i = 1; i <= totalPages; i++) {
             const pageBtn = document.createElement('button');
             pageBtn.classList.add('page-btn');
             if (i === currentPage) pageBtn.classList.add('active');
             pageBtn.innerText = i;
-            pageBtn.onclick = () => { currentPage = i; filterAndRenderLists(); window.scrollTo({top: 0, behavior: 'smooth'}); };
+            pageBtn.onclick = () => { currentPage = i; renderDashboard(); window.scrollTo({top: 0, behavior: 'smooth'}); };
             controlsContainer.appendChild(pageBtn);
         }
 
@@ -1142,11 +1590,10 @@ C. The Mission Statement
         nextBtn.classList.add('page-btn');
         nextBtn.innerHTML = `<i class="fas fa-chevron-right"></i>`;
         nextBtn.disabled = (totalPages === currentPage);
-        nextBtn.onclick = () => { currentPage++; filterAndRenderLists(); window.scrollTo({top: 0, behavior: 'smooth'}); };
+        nextBtn.onclick = () => { currentPage++; renderDashboard(); window.scrollTo({top: 0, behavior: 'smooth'}); };
         controlsContainer.appendChild(nextBtn);
     }
 
-    // UPDATED: Transaction Valuation History Ledger renderer logic
     function renderHistory(data) {
         const hbody = document.getElementById('historyBody');
         if(!hbody) return;
@@ -1154,488 +1601,13 @@ C. The Mission Statement
         
         data.slice(0, 15).forEach(i => {
             const row = hbody.insertRow();
-            const bPrice = parseFloat(i.bPrice) || 0;
-            const sPrice = parseFloat(i.sPrice) || 0;
-            const qty = parseInt(i.qty) || 1;
-            
-            // CHANGED: Force valuation assessment based strictly on Selling Price minus Buying Price
-            const exactNetValuation = (sPrice - bPrice) * qty;
-            
+            const profitVal = i.profit || 0;
             row.innerHTML = `
-                <td>${i.pDate || 'N/A'}</td>
-                <td><strong>${i.pName}</strong><br><small style="color:var(--text-muted)">Code: ${i.skuId || '---'} | Qty: ${qty}</small></td>
-                <td style="color: ${exactNetValuation >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:700;">
-                    ${exactNetValuation >= 0 ? '+' : '-'}₱${Math.abs(exactNetValuation).toLocaleString('en-US', {minimumFractionDigits: 2})}
-                </td>
+                <td>${i.date || 'N/A'}</td>
+                <td><strong>${i.name}</strong><br><small style="color:var(--text-muted)">Code: ${i.skuId || '---'} | Qty: ${i.qty}</small></td>
+                <td style="color: ${profitVal >= 0 ? 'var(--success)' : 'var(--warning)'}; font-weight:600;">₱${profitVal.toLocaleString()}</td>
             `;
         });
-    }
-
-    // Image Input File Streaming Processor Pipes
-    const pPhotosInput = document.getElementById('pPhotos');
-    if(pPhotosInput) {
-        pPhotosInput.addEventListener('change', (e) => {
-            const files = Array.from(e.target.files);
-            const container = document.getElementById('photoPreviewContainer');
-            
-            files.forEach(file => {
-                if(currentBase64Images.length >= 5) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const base64Str = event.target.result;
-                    currentBase64Images.push(base64Str);
-                    renderPhotoPreviews();
-                };
-                reader.readAsDataURL(file);
-            });
-            pPhotosInput.value = ''; // Flush input channel element pointer
-        });
-    }
-
-    function renderPhotoPreviews() {
-        const container = document.getElementById('photoPreviewContainer');
-        container.innerHTML = '';
-        currentBase64Images.forEach((img, idx) => {
-            const wrap = document.createElement('div');
-            wrap.classList.add('preview-wrapper');
-            wrap.innerHTML = `
-                <img src="${img}" class="preview-img active">
-                <div class="remove-img-overlay" onclick="removeBase64Img(${idx})">&times;</div>
-            `;
-            container.appendChild(wrap);
-        });
-    }
-
-    window.removeBase64Img = function(idx) {
-        currentBase64Images.splice(idx, 1);
-        renderPhotoPreviews();
-    }
-
-    // Modal Edit Append Photos Input Processing Listener Block
-    const mPhotosAppendInput = document.getElementById('m_pPhotosAppend');
-    if(mPhotosAppendInput) {
-        mPhotosAppendInput.addEventListener('change', (e) => {
-            const files = Array.from(e.target.files);
-            files.forEach(file => {
-                if(modalEditingBase64Images.length >= 5) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    modalEditingBase64Images.push(event.target.result);
-                    renderModalPhotoPreviews();
-                };
-                reader.readAsDataURL(file);
-            });
-            mPhotosAppendInput.value = '';
-        });
-    }
-
-    function renderModalPhotoPreviews() {
-        const container = document.getElementById('m_photoEditContainer');
-        if(!container) return;
-        container.innerHTML = '';
-        modalEditingBase64Images.forEach((img, idx) => {
-            const wrap = document.createElement('div');
-            wrap.classList.add('preview-wrapper');
-            wrap.innerHTML = `
-                <img src="${img}" class="preview-img active">
-                <div class="remove-img-overlay" onclick="removeModalBase64Img(${idx})">&times;</div>
-            `;
-            container.appendChild(wrap);
-        });
-    }
-
-    window.removeModalBase64Img = function(idx) {
-        modalEditingBase64Images.splice(idx, 1);
-        renderModalPhotoPreviews();
-    }
-
-    // Save and Write Record Node execution flow
-    const actionBtn = document.getElementById('actionBtn');
-    if(actionBtn) {
-        actionBtn.addEventListener('click', () => {
-            const pName = document.getElementById('pName').value.trim();
-            const pCategory = document.getElementById('pCategory').value;
-            const pStatus = document.getElementById('pStatus').value;
-            const pDate = document.getElementById('pDate').value;
-            const qty = parseInt(document.getElementById('qty').value) || 0;
-            const bPrice = parseFloat(document.getElementById('bPrice').value) || 0;
-            const sPrice = parseFloat(document.getElementById('sPrice').value) || 0;
-
-            if(!pName) { alert('Core Product Identifier Name configuration mapping parameter required.'); return; }
-
-            // Extract context conditional specifications schema keys mapping elements
-            let specs = { ExtraDetails: document.getElementById('addSpec_ExtraDetails').value.trim() };
-            if(pCategory === 'Laptop') {
-                specs.Processor = document.getElementById('addSpec_Processor').value.trim();
-                specs.LaptopRam = document.getElementById('addSpec_LaptopRam').value.trim();
-                specs.LaptopStorage = document.getElementById('addSpec_LaptopStorage').value.trim();
-                specs.Battery = document.getElementById('addSpec_Battery').value.trim();
-            } else if(pCategory === 'Ram') {
-                specs.RamType = document.getElementById('addSpec_RamType').value.trim();
-                specs.RamSpeed = document.getElementById('addSpec_RamSpeed').value.trim();
-            } else if(pCategory === 'Storage') {
-                specs.StorageType = document.getElementById('addSpec_StorageType').value.trim();
-                specs.StorageSize = document.getElementById('addSpec_StorageSize').value.trim();
-                specs.StorageHealth = document.getElementById('addSpec_StorageHealth').value.trim();
-                specs.StoragePerf = document.getElementById('addSpec_StoragePerf').value.trim();
-            }
-
-            // Generate unique SKU code identity matrix token sequence
-            const randToken = Math.floor(1000 + Math.random() * 9000);
-            const skuId = `JSH2-${pCategory.substring(0,3).toUpperCase()}-${randToken}`;
-
-            const newProductRef = push(inventoryRef);
-            set(newProductRef, {
-                pName, pCategory, pStatus, pDate, qty, bPrice, sPrice, specs, skuId,
-                images: currentBase64Images
-            }).then(() => {
-                alert('New Enterprise Hardware unit successfully committed to cloud core database storage node ledger.');
-                // Flush forms fields inputs array properties values
-                document.getElementById('pName').value = '';
-                document.getElementById('qty').value = '';
-                document.getElementById('bPrice').value = '';
-                document.getElementById('sPrice').value = '';
-                document.getElementById('addSpec_ExtraDetails').value = '';
-                
-                document.getElementById('addSpec_Processor').value = '';
-                document.getElementById('addSpec_LaptopRam').value = '';
-                document.getElementById('addSpec_LaptopStorage').value = '';
-                document.getElementById('addSpec_Battery').value = '';
-                document.getElementById('addSpec_RamType').value = '';
-                document.getElementById('addSpec_RamSpeed').value = '';
-                document.getElementById('addSpec_StorageType').value = '';
-                document.getElementById('addSpec_StorageSize').value = '';
-                document.getElementById('addSpec_StorageHealth').value = '';
-                document.getElementById('addSpec_StoragePerf').value = '';
-
-                currentBase64Images = [];
-                renderPhotoPreviews();
-                showView('v-list', document.getElementById('navList'));
-            }).catch(err => alert(err.message));
-        });
-    }
-
-    // Modal Edit Opening Engine process mappings parameters loading
-    window.openEditModal = function(id) {
-        const item = fullData.find(x => x.id === id);
-        if(!item) return;
-
-        document.getElementById('m_editId').value = id;
-        document.getElementById('m_skuId').value = item.skuId || '';
-        document.getElementById('m_displaySku').innerText = `[${item.skuId || 'UNTARAGED'}]`;
-        document.getElementById('m_pName').value = item.pName || '';
-        document.getElementById('m_pCategory').value = item.pCategory || 'Laptop';
-        document.getElementById('m_pStatus').value = item.pStatus || 'available';
-        document.getElementById('m_pDate').value = item.pDate || '';
-        document.getElementById('m_qty').value = item.qty || '';
-        document.getElementById('m_bPrice').value = item.bPrice || '';
-        document.getElementById('m_sPrice').value = item.sPrice || '';
-
-        // Trigger Category conditional forms UI fields configurations overlays updates
-        mCategorySelect.dispatchEvent(new Event('change'));
-
-        // Fill current custom specs configurations inputs details values elements safely
-        document.getElementById('mSpec_ExtraDetails').value = (item.specs && item.specs.ExtraDetails) ? item.specs.ExtraDetails : '';
-        if(item.pCategory === 'Laptop' && item.specs) {
-            document.getElementById('mSpec_Processor').value = item.specs.Processor || '';
-            document.getElementById('mSpec_LaptopRam').value = item.specs.LaptopRam || '';
-            document.getElementById('mSpec_LaptopStorage').value = item.specs.LaptopStorage || '';
-            document.getElementById('mSpec_Battery').value = item.specs.Battery || '';
-        } else if(item.pCategory === 'Ram' && item.specs) {
-            document.getElementById('mSpec_RamType').value = item.specs.RamType || '';
-            document.getElementById('mSpec_RamSpeed').value = item.specs.RamSpeed || '';
-        } else if(item.pCategory === 'Storage' && item.specs) {
-            document.getElementById('mSpec_StorageType').value = item.specs.StorageType || '';
-            document.getElementById('mSpec_StorageSize').value = item.specs.StorageSize || '';
-            document.getElementById('mSpec_StorageHealth').value = item.specs.StorageHealth || '';
-            document.getElementById('mSpec_StoragePerf').value = item.specs.StoragePerf || '';
-        }
-
-        modalEditingBase64Images = item.images ? [...item.images] : [];
-        renderModalPhotoPreviews();
-
-        document.getElementById('editModal').classList.remove('hidden');
-    }
-
-    window.closeEditModal = function() {
-        document.getElementById('editModal').classList.add('hidden');
-    }
-
-    const saveEditBtn = document.getElementById('saveEditBtn');
-    if(saveEditBtn) {
-        saveEditBtn.addEventListener('click', () => {
-            const id = document.getElementById('m_editId').value;
-            const skuId = document.getElementById('m_skuId').value;
-            const pName = document.getElementById('m_pName').value.trim();
-            const pCategory = document.getElementById('m_pCategory').value;
-            const pStatus = document.getElementById('m_pStatus').value;
-            const pDate = document.getElementById('m_pDate').value;
-            const qty = parseInt(document.getElementById('m_qty').value) || 0;
-            const bPrice = parseFloat(document.getElementById('m_bPrice').value) || 0;
-            const sPrice = parseFloat(document.getElementById('m_sPrice').value) || 0;
-
-            if(!pName) { alert('Product label title sequence context property definition mapping cannot remain empty string fields.'); return; }
-
-            let specs = { ExtraDetails: document.getElementById('mSpec_ExtraDetails').value.trim() };
-            if(pCategory === 'Laptop') {
-                specs.Processor = document.getElementById('mSpec_Processor').value.trim();
-                specs.LaptopRam = document.getElementById('mSpec_LaptopRam').value.trim();
-                specs.LaptopStorage = document.getElementById('mSpec_LaptopStorage').value.trim();
-                specs.Battery = document.getElementById('mSpec_Battery').value.trim();
-            } else if(pCategory === 'Ram') {
-                specs.RamType = document.getElementById('mSpec_RamType').value.trim();
-                specs.RamSpeed = document.getElementById('mSpec_RamSpeed').value.trim();
-            } else if(pCategory === 'Storage') {
-                specs.StorageType = document.getElementById('mSpec_StorageType').value.trim();
-                specs.StorageSize = document.getElementById('mSpec_StorageSize').value.trim();
-                specs.StorageHealth = document.getElementById('mSpec_StorageHealth').value.trim();
-                specs.StoragePerf = document.getElementById('mSpec_StoragePerf').value.trim();
-            }
-
-            const targetedNodeRef = ref(db, `inventory/${id}`);
-            update(targetedNodeRef, {
-                pName, pCategory, pStatus, pDate, qty, bPrice, sPrice, specs, skuId,
-                images: modalEditingBase64Images
-            }).then(() => {
-                alert('Cloud asset node database property configurations maps updated successfully.');
-                closeEditModal();
-            }).catch(err => alert(err.message));
-        });
-    }
-
-    // Record Deletion processing stream logic loops
-    window.deleteProduct = function(id) {
-        if(confirm('Are you absolutely certain you intend to wipe the targeted infrastructure tracking item out of persistent asset record matrices?')) {
-            const targetedNodeRef = ref(db, `inventory/${id}`);
-            remove(targetedNodeRef).then(() => {
-                alert('Commit successfully executed. Target item removed completely.');
-            }).catch(err => alert(err.message));
-        }
-    }
-
-    // Modal Comprehensive Details Processing Pipelines Viewers Controls
-    let currentCarouselIndex = 0;
-    let currentCarouselImagesArray = [];
-
-    window.openDetailsModal = function(id) {
-        const item = fullData.find(x => x.id === id);
-        if(!item) return;
-
-        document.getElementById('d_pName').innerText = item.pName || 'N/A';
-        document.getElementById('d_skuId').innerText = item.skuId || 'UNASSIGNED ID CODE';
-        document.getElementById('d_pCategory').innerText = item.pCategory || 'General Asset';
-        
-        const sPriceNum = parseFloat(item.sPrice) || 0;
-        document.getElementById('d_pPrice').innerText = `₱${sPriceNum.toLocaleString('en-US', {minimumFractionDigits:2})}`;
-
-        // Compose detailed string specs block arrays to present properties lists cleanly
-        let detailsBlockStr = '';
-        if(item.specs) {
-            for(let specKey in item.specs) {
-                if(specKey !== 'ExtraDetails' && item.specs[specKey]) {
-                    // Split CamelCase labels to readable text headers spacing patterns values
-                    const separatedLabel = specKey.replace(/([A-Z])/g, ' $1').trim();
-                    detailsBlockStr += `${separatedLabel}: ${item.specs[specKey]}\n`;
-                }
-            }
-            if(item.specs.ExtraDetails) {
-                detailsBlockStr += `\nAdditional Assessment Remarks:\n${item.specs.ExtraDetails}`;
-            }
-        }
-        if(!detailsBlockStr) detailsBlockStr = 'No structured custom specifications metrics mapped out for this enterprise physical production inventory hardware node reference item.';
-        document.getElementById('d_pDetails').textContent = detailsBlockStr;
-
-        // Configuration setup for Carousel View Gallery arrays pipelines
-        currentCarouselImagesArray = item.images ? [...item.images] : [];
-        currentCarouselIndex = 0;
-
-        const mainImgElement = document.getElementById('d_mainImg');
-        const frameContainer = document.getElementById('d_carouselFrame');
-        const thumbContainer = document.getElementById('d_thumbContainer');
-        thumbContainer.innerHTML = '';
-
-        if(currentCarouselImagesArray.length === 0) {
-            frameContainer.style.display = 'none';
-        } else {
-            frameContainer.style.display = 'block';
-            updateCarouselDisplay();
-
-            // Render clickable thumbnails bars overlays maps channels selectors buttons elements
-            currentCarouselImagesArray.forEach((imgSrc, idx) => {
-                const thumbImg = document.createElement('img');
-                thumbImg.src = imgSrc;
-                thumbImg.classList.add('preview-img');
-                if(idx === 0) thumbImg.classList.add('active');
-                thumbImg.onclick = () => {
-                    currentCarouselIndex = idx;
-                    updateCarouselDisplay();
-                };
-                thumbContainer.appendChild(thumbImg);
-            });
-        }
-
-        // Channel Omni Communication Suite URL Parameters Injector pipeline
-        const encodedItemName = encodeURIComponent(item.pName || 'Hardware Unit Asset');
-        const encodedSku = encodeURIComponent(item.skuId || 'N/A');
-        const emailBody = `Good day, JSH2Tech Solutions. I would like to formally request an updated availability status profile verification, dynamic technical logs configuration benchmarks details assessment evaluation, and sales acquisition fulfillment procedures parameters details for the following catalog item entry:\n\nProduct Identifier Name: ${item.pName || 'N/A'}\nUnique Systems Code Tracker: ${item.skuId || 'N/A'}\nListed Catalog Valuation Price: ₱${sPriceNum.toLocaleString('en-US', {minimumFractionDigits:2})}\n\nPlease forward relevant physical asset logistics availability tracking updates to this communications channel address endpoint promptly. Thank you.`;
-        
-        document.getElementById('buyBtnGmail').onclick = () => {
-            window.open(`mailto:jsh2tech@gmail.com?subject=Product%20Inquiry%20-%20${encodedSku}&body=${encodeURIComponent(emailBody)}`, '_blank');
-        };
-        document.getElementById('buyBtnMessenger').onclick = () => {
-            // Forward directly to specified corporate executive operations owner personal identity messenger account hub fallback route link channel
-            window.open(`https://m.me/100000595169081`, '_blank');
-        };
-        document.getElementById('buyBtnWhatsapp').onclick = () => {
-            window.open(`https://wa.me/639171234567?text=${encodeURIComponent(emailBody)}`, '_blank'); // Update placeholder number if necessary
-        };
-
-        document.getElementById('detailsModal').classList.remove('hidden');
-    }
-
-    window.closeDetailsModal = function() {
-        document.getElementById('detailsModal').classList.add('hidden');
-    }
-
-    function updateCarouselDisplay() {
-        const mainImgElement = document.getElementById('d_mainImg');
-        if(mainImgElement && currentCarouselImagesArray[currentCarouselIndex]) {
-            mainImgElement.style.opacity = '0.3';
-            setTimeout(() => {
-                mainImgElement.src = currentCarouselImagesArray[currentCarouselIndex];
-                mainImgElement.style.opacity = '1';
-            }, 150);
-        }
-
-        // Sync active state visually onto target thumbnail image frames items nodes
-        const thumbs = document.querySelectorAll('#d_thumbContainer .preview-img');
-        thumbs.forEach((t, idx) => {
-            if(idx === currentCarouselIndex) t.classList.add('active');
-            else t.classList.remove('active');
-        });
-    }
-
-    // Connect Carousel UI controllers keys selectors arrows parameters functions bindings
-    document.getElementById('carouselPrevBtn').onclick = (e) => {
-        e.stopPropagation();
-        currentCarouselIndex--;
-        if(currentCarouselIndex < 0) currentCarouselIndex = currentCarouselImagesArray.length - 1;
-        updateCarouselDisplay();
-    };
-
-    document.getElementById('carouselNextBtn').onclick = (e) => {
-        e.stopPropagation();
-        currentCarouselIndex++;
-        if(currentCarouselIndex >= currentCarouselImagesArray.length) currentCarouselIndex = 0;
-        updateCarouselDisplay();
-    };
-
-    // QR Code Scanning Module Suite Engine Logic implementation hooks
-    const startCamBtn = document.getElementById('startCamBtn');
-    if(startCamBtn) {
-        startCamBtn.addEventListener('click', () => {
-            if(qrScannerInstance) {
-                qrScannerInstance.stop().catch(err => console.log(err));
-                qrScannerInstance = null;
-                document.getElementById('reader').innerHTML = '';
-                return;
-            }
-
-            qrScannerInstance = new Html5Qrcode("reader");
-            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-                // Parse unique item sequence identity signature text code string patterns maps variables 
-                const matchedItem = fullData.find(x => x.skuId === decodedText.trim());
-                if(matchedItem) {
-                    if(qrScannerInstance) {
-                        qrScannerInstance.stop().then(() => {
-                            qrScannerInstance = null;
-                            document.getElementById('reader').innerHTML = '';
-                            openDetailsModal(matchedItem.id);
-                        }).catch(e => console.log(e));
-                    }
-                } else {
-                    alert(`Scanned validation trace text signature data [${decodedText}] did not match any enterprise computing configuration tracking entities committed within cloud environment maps layers.`);
-                }
-            };
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-            qrScannerInstance.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
-                .catch(err => alert(`Video device peripheral synchronization interface connectivity fault block exception error: ${err}`));
-        });
-    }
-
-    // Authentication Core Verification Session state management structures loops execution engine controls
-    const brandTrigger = document.getElementById('brandTrigger');
-    if(brandTrigger) {
-        brandTrigger.addEventListener('click', () => {
-            if(currentRole === 'admin') {
-                alert('Console administration secure credentials environment already verified active.');
-            } else {
-                document.getElementById('authSection').classList.remove('hidden');
-            }
-        });
-    }
-
-    window.closeAuthModal = function() {
-        document.getElementById('authSection').classList.add('hidden');
-    }
-
-    const authBtn = document.getElementById('authBtn');
-    if(authBtn) {
-        authBtn.addEventListener('click', () => {
-            const email = document.getElementById('authEmail').value.trim();
-            const pwd = document.getElementById('authPwd').value;
-
-            if(!email || !pwd) { alert('Full identity access tokens configurations values maps fields strings parameters requirements incomplete.'); return; }
-
-            signInWithEmailAndPassword(auth, email, pwd)
-                .then((userCredential) => {
-                    alert('Identity cryptographic key successfully signed. Administrator console node active.');
-                    closeAuthModal();
-                })
-                .catch((error) => {
-                    alert(`Verification security exception mismatch error alert: ${error.message}`);
-                });
-        });
-    }
-
-    onAuthStateChanged(auth, (user) => {
-        const adminElements = document.querySelectorAll('.admin-only');
-        const adminTableContainer = document.getElementById('adminTableContainer');
-        const guestCatalogContainer = document.getElementById('guestCatalogContainer');
-        const listHeader = document.getElementById('listHeader');
-
-        if(user) {
-            currentRole = 'admin';
-            document.body.classList.add('admin-mode-active');
-            document.getElementById('sidebar').classList.remove('hidden');
-            
-            adminElements.forEach(el => el.classList.remove('hidden'));
-            if(adminTableContainer) adminTableContainer.classList.remove('hidden');
-            if(guestCatalogContainer) guestCatalogContainer.classList.add('hidden');
-            if(listHeader) listHeader.innerText = "System Production Assets Ledger Data Studio View";
-            
-            showView('v-dash', document.getElementById('navDash'));
-        } else {
-            currentRole = 'guest';
-            document.body.classList.remove('admin-mode-active');
-            document.getElementById('sidebar').classList.add('hidden');
-            document.getElementById('publicHeader').style.display = 'flex';
-            
-            adminElements.forEach(el => el.classList.add('hidden'));
-            if(adminTableContainer) adminTableContainer.classList.add('hidden');
-            if(guestCatalogContainer) guestCatalogContainer.classList.remove('hidden');
-            if(listHeader) listHeader.innerText = "Product Catalogue";
-            
-            showView('v-list', document.getElementById('navList'));
-        }
-        currentPage = 1;
-        filterAndRenderLists();
-    });
-
-    window.logout = function() {
-        if(confirm('Terminate secure enterprise management token workspace terminal verification credentials section nodes?')) {
-            signOut(auth).catch(err => alert(err.message));
-        }
     }
 </script>
 </body>
